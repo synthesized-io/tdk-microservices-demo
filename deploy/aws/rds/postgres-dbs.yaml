@@ -51,7 +51,7 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       DBName: !Ref 'DBName'
-      DBInstanceIdentifier: {'Fn::ImportValue': !Sub '${DBName}-${Env}-a'}
+      DBInstanceIdentifier: !Sub '${DBName}-${Env}-a'
       AllocatedStorage: !Ref 'DBAllocatedStorage'
       DBInstanceClass: !Ref 'DBInstanceClass'
       Engine: postgres
@@ -63,7 +63,7 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       DBName: !Ref 'DBName'
-      DBInstanceIdentifier: { 'Fn::ImportValue': !Sub '${DBName}-${Env}-b' }
+      DBInstanceIdentifier: !Sub '${DBName}-${Env}-b'
       AllocatedStorage: !Ref 'DBAllocatedStorage'
       DBInstanceClass: !Ref 'DBInstanceClass'
       Engine: postgres
