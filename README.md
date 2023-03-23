@@ -1,8 +1,6 @@
 # tdk-microservices-demo
 
-### Commands
-
-Create databases:
+## Create databases
 
 ```bash
 aws cloudformation create-stack --stack-name rds-example --template-body file://deploy/aws/rds/postgres-dbs.yaml --parameters ParameterKey=DBName,ParameterValue=db1 ParameterKey=DBPassword,ParameterValue=password1
@@ -26,7 +24,17 @@ pg_dump -h localhost -U tdk_user -f "pagila_films.sql" --no-owner pagila_films
 pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_payments
 ```
 
-### Start the app
+## Init LFS
+- Install Git LFS if it is not already installed, following the instructions at https://git-lfs.com/.
+
+- From the project root directory, execute the following commands:
+
+```bash
+git lfs install
+git lfs pull
+```
+
+## Start the app
 
 ```bash
 docker-compose up --force-recreate --build
