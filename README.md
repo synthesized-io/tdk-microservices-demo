@@ -25,6 +25,9 @@ pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_paym
 ```
 
 ## Init LFS
+- Install Git LFS if it is not already installed, following the instructions at https://git-lfs.com/.
+
+- From the project root directory, execute the following commands:
 
 ```bash
 git lfs install
