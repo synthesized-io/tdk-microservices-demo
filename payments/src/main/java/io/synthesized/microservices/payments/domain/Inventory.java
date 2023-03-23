@@ -27,15 +27,4 @@ public class Inventory implements Serializable {
 
     @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Rental> rentals = new HashSet<>();
-
-    // Add and remove rental methods for managing bi-directional relationship
-    public void addRental(Rental rental) {
-        rentals.add(rental);
-        rental.setInventory(this);
-    }
-
-    public void removeRental(Rental rental) {
-        rentals.remove(rental);
-        rental.setInventory(null);
-    }
 }
