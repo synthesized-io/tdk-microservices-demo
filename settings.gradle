@@ -1,0 +1,5 @@
+rootProject.name = 'tdk-microservices-demo'
+
+include 'common'
+include 'films'
+include 'payments'
