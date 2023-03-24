@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.ExecutionException;
+
 @RestController
 @RequestMapping("/api/v1/films")
 public class FilmController {
@@ -17,7 +19,7 @@ public class FilmController {
     }
 
     @GetMapping("/{filmId}")
-    public FilmData getFilmInfo(@PathVariable Integer filmId) {
+    public FilmData getFilmInfo(@PathVariable Integer filmId) throws ExecutionException, InterruptedException {
         return filmService.getFilmInfo(filmId);
     }
 }

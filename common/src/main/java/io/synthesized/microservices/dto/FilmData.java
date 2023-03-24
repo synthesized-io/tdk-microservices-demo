@@ -1,4 +1,6 @@
 package io.synthesized.microservices.dto;
 
-public record FilmData(Integer filmId, String title) {
+import java.util.List;
+
+public record FilmData(Integer filmId, String title, List<PaymentData> payments) {
 }

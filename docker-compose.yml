@@ -13,6 +13,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://films-db:5432/films
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=123
+      - PAYMENT_SERVICE_ADDR=payments:8080
 
   payments:
     build:
