@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Amazon EKS Cluster'
+
+Resources:
+  EKSCluster:
+    Type: 'AWS::EKS::Cluster'
+    Properties:
+      Name: 'DemoEKSCluster'
+      RoleArn: 'arn:aws:iam::248441125472:role/eksDemoClusterRole'
+      ResourcesVpcConfig:
+        SubnetIds:
+          - 'subnet-5499442e'
+          - 'subnet-43bb2a2a'
+          - 'subnet-643ada28'
+
+Outputs:
+  EKSClusterName:
+    Description: 'Demo EKS Cluster Name'
+    Value: !Ref EKSCluster

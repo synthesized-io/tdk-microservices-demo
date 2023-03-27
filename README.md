@@ -3,7 +3,7 @@
 ## Create databases
 
 ```bash
-aws cloudformation create-stack --stack-name rds-example --template-body file://deploy/aws/rds/postgres-dbs.yaml --parameters ParameterKey=DBName,ParameterValue=db1 ParameterKey=DBPassword,ParameterValue=password1
+aws cloudformation create-stack --stack-name demo-rds-dbs --template-body file://deploy/aws/rds/postgres-dbs.yaml --parameters ParameterKey=DBName,ParameterValue=db1 ParameterKey=DBPassword,ParameterValue=password1
 ```
 
 Pagila dump splitting:
@@ -38,4 +38,23 @@ git lfs pull
 
 ```bash
 docker-compose up --force-recreate --build
+```
+
+## Create EKS cluster
+
+1. Find arn for for EKS cluster IAM role. If doesn't exist follow [this](https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html#create-service-role)
+
+2. Find subnet ids for your default VPC:
+
+```bash
+aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query 'Vpcs[0].VpcId' --output text
+aws ec2 describe-subnets --filters Name=vpc-id,Values=<vpc id> --query 'Subnets[].SubnetId' --output text
+```
+
+Update corresponding values in `deploy/aws/eks/cluster.yaml`, if needed (there are some pre-filled values)
+
+3. Create EKS cluster
+
+```bash
+aws cloudformation create-stack --stack-name demo-eks-cluster --template-body file://deploy/aws/eks/demo-cluster.yaml
 ```
