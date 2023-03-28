@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tdk-microservices-demo.fullname" . }}
+  labels:
+    {{- include "tdk-microservices-demo.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.apps.films.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "tdk-microservices-demo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tdk-microservices-demo.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.apps.films.image.repository }}:{{ .Values.apps.films.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.apps.films.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.apps.films.image.containerPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
