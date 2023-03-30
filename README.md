@@ -2,7 +2,6 @@
 
 ## Local Development
 
-
 ### Init LFS
 - Install Git LFS if it is not already installed, following the instructions at https://git-lfs.com/.
 
@@ -26,7 +25,6 @@ docker-compose up --force-recreate --build
 To deploy the demo you need an AWS account.
 
 Also, make sure you have AWS CLI installed: [docs](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-
 
 ### Create environments in AWS
 
@@ -56,7 +54,20 @@ FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=prod EC2_SS
 FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=staging EC2_SSH_KEY=denis ./infrastructure/scripts/deploy.sh
 ```
 
-This will deploy an two envs with EKS cluster and two PostgreSQL DBs.
+This will deploy two envs with EKS cluster and two PostgreSQL DBs.
+
+## Configure kubectl
+
+```bash
+aws eks update-kubeconfig --region eu-west-2 --name demo-eks-cluster-$DEMO_ENV
+kubectl config get-contexts
+```
+
+Copy the `NAME` of our context and set it as the current context:
+
+```bash
+kubectl config use-context <NAME>
+```
 
 ## Appendix: Pagila dump splitting:
 
