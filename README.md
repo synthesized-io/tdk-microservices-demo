@@ -70,7 +70,7 @@ docker exec -it pagila-postgres psql -U postgres -c "ALTER SCHEMA public OWNER T
 docker exec -it pagila-postgres psql -U postgres -c "drop role cloudsqladmin;" tdk_sakila_input_1gb
 
 python3 -m pip install psycopg2 
-python3 deploy/aws/rds/split.py
+python3 infrastructure/scripts/split.py
 
 pg_dump -h localhost -U tdk_user -f "pagila_films.sql" --no-owner pagila_films
 pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_payments

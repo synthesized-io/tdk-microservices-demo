@@ -213,6 +213,15 @@ Resources:
           ToPort: 443
           CidrIp: 0.0.0.0/0
 
+  NodeGroupLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub '${EKSCluster}-launch-template'
+      LaunchTemplateData:
+        SecurityGroupIds:
+          - !Ref IngressControllerSecurityGroup
+        KeyName: !Ref KeyName
+
   EKSNodeGroup:
     Type: AWS::EKS::Nodegroup
     Properties:
@@ -224,12 +233,10 @@ Resources:
         MinSize: '1'
         MaxSize: '3'
         DesiredSize: '2'
-      InstanceTypes:
-        - 't3.small'
       AmiType: AL2_x86_64
-      RemoteAccess:
-        Ec2SshKey: !Ref KeyName
-      AdditionalSecurityGroups: [!Ref IngressControllerSecurityGroup]
+      InstanceTypes: ['t3.small']
+      LaunchTemplate:
+        Id: !Ref NodeGroupLaunchTemplate
 
 Outputs:
   EKSClusterName:
