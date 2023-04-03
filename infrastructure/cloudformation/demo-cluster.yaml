@@ -1,0 +1,244 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Amazon EKS Cluster'
+Parameters:
+  FilmsDBName:
+    Description: The database name
+    Type: String
+    Default: 'films'
+  FilmsDBUser:
+    Description: The database admin account username
+    Type: String
+    Default: 'films_user'
+    NoEcho: 'true'
+  FilmsDBPassword:
+    Description: The database admin account password
+    Type: String
+    NoEcho: 'true'
+  PaymentsDBName:
+    Description: The database name
+    Type: String
+    Default: 'payments'
+  PaymentsDBUser:
+    Description: The database admin account username
+    Type: String
+    Default: 'payments_user'
+    NoEcho: 'true'
+  PaymentsDBPassword:
+    Description: The database admin account password
+    Type: String
+    NoEcho: 'true'
+  DBAllocatedStorage:
+    Description: The size of the database (Gb)
+    Type: Number
+    Default: '5'
+  DBInstanceClass:
+    Description: The database instance type
+    Type: String
+    Default: 'db.t3.small'
+  KeyName:
+    Description: 'Name of an existing EC2 KeyPair to enable SSH access to the instances'
+    Type: AWS::EC2::KeyPair::KeyName
+  Env:
+    Description: Environment name
+    Type: String
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: true
+
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+
+  SubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 2, !GetAZs '' ]
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: true
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  Route:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  SubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetA
+      RouteTableId: !Ref RouteTable
+
+  SubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetB
+      RouteTableId: !Ref RouteTable
+
+  SubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetC
+      RouteTableId: !Ref RouteTable
+
+  DBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: 'Subnet group for RDS PostgreSQL instance'
+      SubnetIds: [!Ref SubnetA, !Ref SubnetB, !Ref SubnetC]
+
+  DBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Allow PostgreSQL traffic'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 0.0.0.0/0
+
+  FilmsDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: !Ref 'FilmsDBName'
+      DBInstanceIdentifier: !Sub '${FilmsDBName}-${Env}'
+      AllocatedStorage: !Ref 'DBAllocatedStorage'
+      DBInstanceClass: !Ref 'DBInstanceClass'
+      Engine: postgres
+      MasterUsername: !Ref 'FilmsDBUser'
+      MasterUserPassword: !Ref 'FilmsDBPassword'
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      MultiAZ: false
+      PubliclyAccessible: true
+    DeletionPolicy: Snapshot
+
+  PaymentsDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: !Ref 'PaymentsDBName'
+      DBInstanceIdentifier: !Sub '${PaymentsDBName}-${Env}'
+      AllocatedStorage: !Ref 'DBAllocatedStorage'
+      DBInstanceClass: !Ref 'DBInstanceClass'
+      Engine: postgres
+      MasterUsername: !Ref 'PaymentsDBUser'
+      MasterUserPassword: !Ref 'PaymentsDBPassword'
+    DeletionPolicy: Snapshot
+
+  EKSServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - eks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+
+  EKSCluster:
+    Type: 'AWS::EKS::Cluster'
+    Properties:
+      Name: !Sub 'demo-eks-cluster-${Env}'
+      RoleArn: !GetAtt EKSServiceRole.Arn
+      ResourcesVpcConfig:
+        SubnetIds: [!Ref SubnetA, !Ref SubnetB, !Ref SubnetC]
+
+  EKSNodeRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ec2.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy'
+        - 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly'
+        - 'arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy'
+
+  IngressControllerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Allow ingress controller traffic on ports 80 and 443'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+
+  NodeGroupLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub '${EKSCluster}-launch-template'
+      LaunchTemplateData:
+        SecurityGroupIds:
+          - !Ref IngressControllerSecurityGroup
+        KeyName: !Ref KeyName
+
+  EKSNodeGroup:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      NodegroupName: !Sub '${EKSCluster}-nodegroup'
+      ClusterName: !Ref EKSCluster
+      NodeRole: !GetAtt EKSNodeRole.Arn
+      Subnets: [!Ref SubnetA, !Ref SubnetB, !Ref SubnetC]
+      ScalingConfig:
+        MinSize: '1'
+        MaxSize: '3'
+        DesiredSize: '2'
+      AmiType: AL2_x86_64
+      InstanceTypes: ['t3.small']
+      LaunchTemplate:
+        Id: !Ref NodeGroupLaunchTemplate
+
+Outputs:
+  EKSClusterName:
+    Description: 'Demo EKS Cluster Name'
+    Value: !Ref EKSCluster
