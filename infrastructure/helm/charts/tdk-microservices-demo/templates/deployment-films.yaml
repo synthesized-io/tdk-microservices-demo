@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}
+  labels:
+    app: {{ .Values.app.name }}
+    component: {{ .Values.services.films.name }}
+spec:
+  replicas: {{ .Values.services.films.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.films.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.films.name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.services.films.image.repository }}:{{ .Values.services.films.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.services.films.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.films.image.containerPort }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

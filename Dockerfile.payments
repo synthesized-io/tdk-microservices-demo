@@ -1,5 +1,5 @@
 # Use the official Gradle image as the base image for building the project
-FROM openjdk:17-jdk-slim AS build
+FROM --platform=linux/amd64 openjdk:17-jdk-slim AS build
 
 # Set the working directory
 WORKDIR /app
@@ -15,7 +15,7 @@ COPY . .
 RUN ./gradlew clean :payments:build -x test
 
 # Use the official OpenJDK image for running the application
-FROM openjdk:17-jdk-slim
+FROM --platform=linux/amd64 openjdk:17-jdk-slim
 
 # Set the working directory
 WORKDIR /app

@@ -8,5 +8,4 @@ aws cloudformation create-stack \
   --template-body file://infrastructure/cloudformation/demo-cluster.yaml \
   --parameters ParameterKey=FilmsDBPassword,ParameterValue="$FILMS_DB_PASSWORD" \
       ParameterKey=PaymentsDBPassword,ParameterValue="$PAYMENTS_DB_PASSWORD" \
-      ParameterKey=Env,ParameterValue="$DEMO_ENV" \
-      ParameterKey=KeyName,ParameterValue="$EC2_SSH_KEY"
+      ParameterKey=Env,ParameterValue="$DEMO_ENV"

@@ -6,3 +6,4 @@ src
 build/*
 # except files for docker
 !build/docker
+.git/

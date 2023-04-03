@@ -50,8 +50,8 @@ export DEMO_ENV=prod
 Example:
 
 ```bash
-FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=prod EC2_SSH_KEY=denis ./infrastructure/scripts/deploy.sh
-FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=staging EC2_SSH_KEY=denis ./infrastructure/scripts/deploy.sh
+FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=prod EC2_SSH_KEY=denis ./infrastructure/scripts/create-env.sh
+FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=staging EC2_SSH_KEY=denis ./infrastructure/scripts/create-env.sh
 ```
 
 This will deploy two envs with EKS cluster and two PostgreSQL DBs.
@@ -67,6 +67,27 @@ Copy the `NAME` of our context and set it as the current context:
 
 ```bash
 kubectl config use-context <NAME>
+```
+
+## Create Docker registry for both services
+
+```bash
+SERVICE_NAME=films ./infrastructure/scripts/create-docker-registry.sh
+SERVICE_NAME=payments ./infrastructure/scripts/create-docker-registry.sh
+```
+Log in to ECR:
+Use the AWS CLI to authenticate your Docker client with your ECR registry. Replace <your-account-id> with your AWS account ID and <your-region> with the AWS region where your ECR repository is located.
+
+```bash
+aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-account-id>.dkr.ecr.<your-region>.amazonaws.com
+```
+
+## Deploy services
+
+```bash
+kubectl create namespace tsk-microservices-demo
+
+helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo --values ./infrastructure/helm/environemnts/staging/values-staging.yaml --namespace tdk-microservices-demo
 ```
 
 ## Appendix: Pagila dump splitting:
