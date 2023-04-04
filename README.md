@@ -28,27 +28,6 @@ Also, make sure you have AWS CLI installed: [docs](https://docs.aws.amazon.com/c
 
 ### Create environments in AWS
 
-Before you start, you need a EC2 ssh key. If you don't have one, create one in the aws console and copy it's name:
-
-```bash
-export EC2_SSH_KEY=<NAME>
-```
-
-Also, define db passwords:
-
-```bash
-expot FILMS_DB_PASSWORD=<PASSWORD>
-expot PAYMENTS_DB_PASSWORD=<PASSWORD>
-```
-
-And finally, the environment:
-
-```bash
-export DEMO_ENV=prod
-```
-
-Example:
-
 ```bash
 FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=prod EC2_SSH_KEY=denis ./infrastructure/scripts/create-env.sh
 FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=staging EC2_SSH_KEY=denis ./infrastructure/scripts/create-env.sh
