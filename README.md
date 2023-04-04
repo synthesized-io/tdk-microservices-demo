@@ -35,120 +35,65 @@ FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=staging ./i
 
 This will deploy two envs with EKS cluster and two PostgreSQL DBs.
 
-## Configure kubectl
-
-```bash
-aws eks update-kubeconfig --region eu-west-2 --name demo-eks-cluster-$DEMO_ENV
-kubectl config get-contexts
-```
-
-Copy the `NAME` of our context and set it as the current context:
-
-```bash
-kubectl config use-context <NAME>
-```
-
 ## Create Docker registry for both services
 
 ```bash
 SERVICE_NAME=films ./infrastructure/scripts/create-docker-registry.sh
 SERVICE_NAME=payments ./infrastructure/scripts/create-docker-registry.sh
 ```
-Log in to ECR:
-Use the AWS CLI to authenticate your Docker client with your ECR registry. Replace <your-account-id> with your AWS account ID and <your-region> with the AWS region where your ECR repository is located.
+Wait unit registries are created.
+
+Now, let's build and push images to the registries
+
+Use your AWS account ID and your AWS region in this command:
 
 ```bash
-aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-account-id>.dkr.ecr.<your-region>.amazonaws.com
-```
-
-Build images:
-
-```bash
-docker build --platform linux/amd64 -t <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/demo-repo-films:latest . -f Dockerfile.films
-docker build --platform linux/amd64 -t <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/demo-repo-payments:latest . -f Dockerfile.payments
-```
-
-Push images:
-
-```bash
-docker push <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/demo-repo-films:latest
-docker push <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/demo-repo-payments:latest
+ACCOUNT=xxx REGION=eu-west-2 ./infrastructure/scripts/build-and-push.sh
 ```
 
 ## Deploy services
 
-Deploy ingress controller:
+We are gonna use helm. For that we need to configure kubectl.
+
+Let's fetch configs for our clusters:
 
 ```bash
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
+aws eks update-kubeconfig --region eu-west-2 --name demo-eks-cluster-prod
+aws eks update-kubeconfig --region eu-west-2 --name demo-eks-cluster-staging
 
-kubectl create namespace ingress-nginx
-
-helm install ingress-nginx ingress-nginx/ingress-nginx \
-    --namespace ingress-nginx \
-    --create-namespace \
-    --set controller.replicaCount=2 \
-    --set controller.service.type=LoadBalancer \
-    --set controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"="nlb"
+kubectl config get-contexts
 ```
-Get the name of the ingress controller:
+Copy the `NAME` of the corresponding context and run:
 ```bash
+kubectl config use-context <STAGING NAME>
+ENV=staging ./infrastructure/scripts/install-all.sh
+```
+
+The same procedure for prod cluster:
+```bash
+kubectl config use-context <PROD NAME>
+ENV=prod ./infrastructure/scripts/install-all.sh
+```
+
+## Configure DNS
+
+Get load balancer names for staging:
+```bash
+kubectl config use-context <STAGING NAME>
 kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 ```
 
-Create an A record in Route53 for this NLB. See [docs](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-elb-load-balancer.html)
-
-Now, let's switch to staging context and deploy the app:
-
+and prod:
 ```bash
-kubectl config use-context <staging name>
+kubectl config use-context <PROD NAME>
+kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 ```
 
-Create a namespace for the demo:
-```bash
-kubectl create namespace tdk-microservices-demo
-```
+Create an A records in Route53 for this NLBs. See [docs](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-elb-load-balancer.html):
 
-Deploy secrets (you need to create these files using provided examples):
-```bash
-kubectl apply -f ./infrastructure/helm/environemnts/staging/films-secret-staging.yaml -n tdk-microservices-demo
-kubectl apply -f ./infrastructure/helm/environemnts/staging/payments-secret-staging.yaml -n tdk-microservices-demo
-```
-
-Deploy the app:
-```bash
-helm install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
-  --values ./infrastructure/helm/environemnts/staging/values-staging.yaml \
-  --namespace tdk-microservices-demo
-```
-
-Same procedure for production:
-```bash
-kubectl config use-context <prod name>
-```
-
-Create a namespace for the demo:
-```bash
-kubectl create namespace tdk-microservices-demo
-```
-
-Deploy secrets (you need to create these files using provided examples):
-```bash
-kubectl apply -f ./infrastructure/helm/environemnts/prod/films-secret-prod.yaml -n tdk-microservices-demo
-kubectl apply -f ./infrastructure/helm/environemnts/prod/payments-secret-prod.yaml -n tdk-microservices-demo
-```
-
-Deploy the app:
-```bash
-helm install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
-  --values ./infrastructure/helm/environemnts/prod/values-prod.yaml \
-  --namespace tdk-microservices-demo
-```
-
-Check status of the deployment:
-```bash
-kubectl get pods -n tdk-microservices-demo
+```text
+staging.tdk-microservices-demo.com -> <STAGING NLB>
+tdk-microservices-demo.com -> <PROD NLB>
 ```
 
 ## Appendix: Pagila dump splitting:
