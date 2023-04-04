@@ -82,6 +82,20 @@ Use the AWS CLI to authenticate your Docker client with your ECR registry. Repla
 aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-account-id>.dkr.ecr.<your-region>.amazonaws.com
 ```
 
+Build images:
+
+```bash
+docker build --platform linux/amd64 -t <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/demo-repo-films:latest . -f Dockerfile.films
+docker build --platform linux/amd64 -t <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/demo-repo-payments:latest . -f Dockerfile.payments
+```
+
+Push images:
+
+```bash
+docker push <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/demo-repo-films:latest
+docker push <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/demo-repo-payments:latest
+```
+
 ## Deploy services
 
 Deploy ingress controller:
