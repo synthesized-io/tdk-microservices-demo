@@ -27,4 +27,4 @@ COPY --from=build /app/films/build/libs/films-0.0.1-SNAPSHOT.jar /app/app.jar
 EXPOSE 8080
 
 # Set the entry point for the built JAR file
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=90", "app.jar"]
