@@ -11,4 +11,11 @@ ingress:
               name: films-api
               port:
                 number: 80
+        - path: /api/v1/payments
+          pathType: Prefix
+          backend:
+            service:
+              name: payments-api
+              port:
+                number: 80
   tls: []
