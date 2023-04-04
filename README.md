@@ -135,14 +135,14 @@ kubectl create namespace tdk-microservices-demo
 
 Deploy secrets (you need to create these files using provided examples):
 ```bash
-kubectl apply -f ./infrastructure/helm/environemnts/staging/films-secret-prod.yaml -n tdk-microservices-demo
-kubectl apply -f ./infrastructure/helm/environemnts/staging/payments-secret-prod.yaml -n tdk-microservices-demo
+kubectl apply -f ./infrastructure/helm/environemnts/prod/films-secret-prod.yaml -n tdk-microservices-demo
+kubectl apply -f ./infrastructure/helm/environemnts/prod/payments-secret-prod.yaml -n tdk-microservices-demo
 ```
 
 Deploy the app:
 ```bash
 helm install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
-  --values ./infrastructure/helm/environemnts/staging/values-prod.yaml \
+  --values ./infrastructure/helm/environemnts/prod/values-prod.yaml \
   --namespace tdk-microservices-demo
 ```
 
