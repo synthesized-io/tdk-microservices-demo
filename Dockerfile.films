@@ -12,7 +12,7 @@ RUN ./gradlew build || return 0
 COPY . .
 
 # Build the project
-RUN ./gradlew clean :films:build -x test --stacktrace
+RUN ./gradlew clean :films:build -x test
 
 # Use the official OpenJDK image for running the application
 FROM --platform=linux/amd64 openjdk:17-jdk-slim
