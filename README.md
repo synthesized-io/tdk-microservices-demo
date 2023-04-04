@@ -118,7 +118,9 @@ kubectl apply -f ./infrastructure/helm/environemnts/staging/payments-secret-stag
 
 Deploy the app:
 ```bash
-helm install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo --values ./infrastructure/helm/environemnts/staging/values-staging.yaml --namespace tdk-microservices-demo
+helm install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
+  --values ./infrastructure/helm/environemnts/staging/values-staging.yaml \
+  --namespace tdk-microservices-demo
 ```
 
 Same procedure for production:
@@ -139,7 +141,9 @@ kubectl apply -f ./infrastructure/helm/environemnts/staging/payments-secret-prod
 
 Deploy the app:
 ```bash
-helm install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo --values ./infrastructure/helm/environemnts/staging/values-prod.yaml --namespace tdk-microservices-demo
+helm install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
+  --values ./infrastructure/helm/environemnts/staging/values-prod.yaml \
+  --namespace tdk-microservices-demo
 ```
 
 Check status of the deployment:
