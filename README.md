@@ -66,13 +66,13 @@ kubectl config get-contexts
 Copy the `NAME` of the corresponding context and run:
 ```bash
 kubectl config use-context <STAGING NAME>
-ENV=staging ./infrastructure/scripts/install-all.sh
+DEMO_ENV=staging ./infrastructure/scripts/install-all.sh
 ```
 
 The same procedure for prod cluster:
 ```bash
 kubectl config use-context <PROD NAME>
-ENV=prod ./infrastructure/scripts/install-all.sh
+DEMO_ENV=prod ./infrastructure/scripts/install-all.sh
 ```
 
 ## Configure DNS

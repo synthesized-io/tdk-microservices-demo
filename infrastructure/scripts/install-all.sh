@@ -15,9 +15,9 @@ helm install ingress-nginx ingress-nginx/ingress-nginx \
 
 kubectl create namespace tdk-microservices-demo
 
-kubectl apply -f ./infrastructure/helm/environemnts/"$ENV"/films-secret-"$ENV".yaml -n tdk-microservices-demo
-kubectl apply -f ./infrastructure/helm/environemnts/"$ENV"/payments-secret-"$ENV".yaml -n tdk-microservices-demo
+kubectl apply -f ./infrastructure/helm/environemnts/"$DEMO_ENV"/films-secret-"$DEMO_ENV".yaml -n tdk-microservices-demo
+kubectl apply -f ./infrastructure/helm/environemnts/"$DEMO_ENV"/payments-secret-"$DEMO_ENV".yaml -n tdk-microservices-demo
 
 helm install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
-  --values ./infrastructure/helm/environemnts/"$ENV"/values-"$ENV".yaml \
+  --values ./infrastructure/helm/environemnts/"$DEMO_ENV"/values-"$DEMO_ENV".yaml \
   --namespace tdk-microservices-demo
