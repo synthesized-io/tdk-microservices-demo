@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.app.name }}
+  name: {{ .Values.services.films.name }}
   labels:
     app: {{ .Values.app.name }}
     component: {{ .Values.services.films.name }}
@@ -23,5 +23,8 @@ spec:
             - name: http
               containerPort: {{ .Values.services.films.image.containerPort }}
               protocol: TCP
+          envFrom:
+            - secretRef:
+                name: films-secret
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

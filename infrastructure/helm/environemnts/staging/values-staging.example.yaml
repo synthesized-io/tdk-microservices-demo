@@ -1,7 +1,7 @@
 ingress:
   enabled: true
   hosts:
-    - host: staging.tdk-microservices-demo.synthesized.io
+    - host: staging.tdk-microservices-demo.example.com
       http:
         paths:
         - path: /api/v1/films

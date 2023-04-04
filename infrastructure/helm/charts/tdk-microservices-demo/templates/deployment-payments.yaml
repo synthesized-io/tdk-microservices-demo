@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.payments.name }}
+  labels:
+    app: {{ .Values.app.name }}
+    component: {{ .Values.services.payments.name }}
+spec:
+  replicas: {{ .Values.services.payments.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.payments.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.payments.name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.services.payments.image.repository }}:{{ .Values.services.payments.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.services.payments.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.payments.image.containerPort }}
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: payments-secret
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

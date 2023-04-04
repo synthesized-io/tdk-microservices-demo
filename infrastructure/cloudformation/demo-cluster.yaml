@@ -294,7 +294,7 @@ Resources:
         MaxSize: '3'
         DesiredSize: '2'
       AmiType: AL2_x86_64
-      InstanceTypes: ['t3.small']
+      InstanceTypes: ['t3.medium']
       LaunchTemplate:
         Id: !Ref NodeGroupLaunchTemplate
 

@@ -84,10 +84,74 @@ aws ecr get-login-password --region <your-region> | docker login --username AWS 
 
 ## Deploy services
 
-```bash
-kubectl create namespace tsk-microservices-demo
+Deploy ingress controller:
 
-helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo --values ./infrastructure/helm/environemnts/staging/values-staging.yaml --namespace tdk-microservices-demo
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+kubectl create namespace ingress-nginx
+
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+    --namespace ingress-nginx \
+    --create-namespace \
+    --set controller.replicaCount=2 \
+    --set controller.service.type=LoadBalancer \
+    --set controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"="nlb"
+```
+Get the hostname of the ingress controller:
+```bash
+kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+```
+
+You can create an A record in Route53 for this NLB.
+
+Now, let's switch to staging context and deploy the app:
+
+```bash
+kubectl config use-context <staging name>
+```
+
+Create a namespace for the demo:
+```bash
+kubectl create namespace tdk-microservices-demo
+```
+
+Deploy secrets (you need to create these files using provided examples):
+```bash
+kubectl apply -f ./infrastructure/helm/environemnts/staging/films-secret-staging.yaml -n tdk-microservices-demo
+kubectl apply -f ./infrastructure/helm/environemnts/staging/payments-secret-staging.yaml -n tdk-microservices-demo
+```
+
+Deploy the app:
+```bash
+helm install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo --values ./infrastructure/helm/environemnts/staging/values-staging.yaml --namespace tdk-microservices-demo
+```
+
+Same procedure for production:
+```bash
+kubectl config use-context <prod name>
+```
+
+Create a namespace for the demo:
+```bash
+kubectl create namespace tdk-microservices-demo
+```
+
+Deploy secrets (you need to create these files using provided examples):
+```bash
+kubectl apply -f ./infrastructure/helm/environemnts/staging/films-secret-prod.yaml -n tdk-microservices-demo
+kubectl apply -f ./infrastructure/helm/environemnts/staging/payments-secret-prod.yaml -n tdk-microservices-demo
+```
+
+Deploy the app:
+```bash
+helm install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo --values ./infrastructure/helm/environemnts/staging/values-prod.yaml --namespace tdk-microservices-demo
+```
+
+Check status of the deployment:
+```bash
+kubectl get pods -n tdk-microservices-demo
 ```
 
 ## Appendix: Pagila dump splitting:
