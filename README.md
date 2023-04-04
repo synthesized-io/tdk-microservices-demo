@@ -63,6 +63,7 @@ aws eks update-kubeconfig --region eu-west-2 --name demo-eks-cluster-staging
 
 kubectl config get-contexts
 ```
+
 Copy the `NAME` of the corresponding context and run:
 ```bash
 kubectl config use-context <STAGING NAME>
