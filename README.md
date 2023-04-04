@@ -92,12 +92,12 @@ helm install ingress-nginx ingress-nginx/ingress-nginx \
     --set controller.service.type=LoadBalancer \
     --set controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"="nlb"
 ```
-Get the hostname of the ingress controller:
+Get the name of the ingress controller:
 ```bash
 kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 ```
 
-You can create an A record in Route53 for this NLB.
+Create an A record in Route53 for this NLB. See [docs](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-elb-load-balancer.html)
 
 Now, let's switch to staging context and deploy the app:
 
