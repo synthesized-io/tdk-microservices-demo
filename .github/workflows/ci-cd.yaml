@@ -3,7 +3,7 @@ name: CI/CD
 on:
   push:
     branches:
-      - master
+      - heml-charts
 
 env:
   AWS_REGION: eu-west-2
