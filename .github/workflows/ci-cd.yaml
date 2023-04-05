@@ -89,7 +89,7 @@ jobs:
       - name: Deploy to production
         if: github.event_name == 'workflow_dispatch'
         run: |
-          kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.PROD_CLUSTER_NAME
+          kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.PROD_CLUSTER_NAME }}
           helm upgrade --install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/production/values-production.yaml \
             --namespace tdk-microservices-demo \
