@@ -21,6 +21,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Set short SHA
+        run: echo "SHORT_SHA=$(echo ${GITHUB_SHA::8})" >> $GITHUB_ENV
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -37,7 +40,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.ECR_REPOSITORY_FILMS }}:${{ github.sha_short }}
+          tags: ${{ env.ECR_REPOSITORY_FILMS }}:${{ env.SHORT_SHA }}
           file: Dockerfile.films
 
       - name: Build and push payments Docker image
@@ -45,7 +48,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.ECR_REPOSITORY_PAYMENTS }}:${{ github.sha_short }}
+          tags: ${{ env.ECR_REPOSITORY_PAYMENTS }}:${{ env.SHORT_SHA }}
           file: Dockerfile.payments
 
       - name: Set up Kubernetes environment
@@ -57,8 +60,8 @@ jobs:
           helm upgrade --install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/staging/values-staging.yaml \
             --namespace tdk-microservices-demo \
-            --set services.films.image.tag=${{ github.sha_short }} \
-            --set services.payments.image.tag=${{ github.sha_short }}
+            --set services.films.image.tag=${{ env.SHORT_SHA }} \
+            --set services.payments.image.tag=${{ env.SHORT_SHA }}
 
       - name: Run tests
         run: |
@@ -82,5 +85,5 @@ jobs:
           helm upgrade --install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/production/values-production.yaml \
             --namespace tdk-microservices-demo \
-            --set services.films.image.tag=${{ github.sha_short }} \
-            --set services.payments.image.tag=${{ github.sha_short }}
+            --set services.films.image.tag=${{ env.SHORT_SHA }} \
+            --set services.payments.image.tag=${{ env.SHORT_SHA }}
