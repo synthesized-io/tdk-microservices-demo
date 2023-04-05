@@ -15,3 +15,6 @@ out/
 !**/src/test/**/out/
 
 .DS_Store/
+
+*-secret-prod.yaml
+*-secret-staging.yaml

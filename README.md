@@ -2,7 +2,6 @@
 
 ## Local Development
 
-
 ### Init LFS
 - Install Git LFS if it is not already installed, following the instructions at https://git-lfs.com/.
 
@@ -27,36 +26,76 @@ To deploy the demo you need an AWS account.
 
 Also, make sure you have AWS CLI installed: [docs](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 
-
 ### Create environments in AWS
 
-Before you start, you need a EC2 ssh key. If you don't have one, create one in the aws console and copy it's name:
-
 ```bash
-export EC2_SSH_KEY=<NAME>
+FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=prod ./infrastructure/scripts/create-env.sh
+FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=staging ./infrastructure/scripts/create-env.sh
 ```
 
-Also, define db passwords:
+This will deploy two envs with EKS cluster and two PostgreSQL DBs.
+
+## Create Docker registry for both services
 
 ```bash
-expot FILMS_DB_PASSWORD=<PASSWORD>
-expot PAYMENTS_DB_PASSWORD=<PASSWORD>
+SERVICE_NAME=films ./infrastructure/scripts/create-docker-registry.sh
+SERVICE_NAME=payments ./infrastructure/scripts/create-docker-registry.sh
 ```
+Wait unit registries are created.
 
-And finally, the environment:
+Now, let's build and push images to the registries
+
+Use your AWS account ID and your AWS region in this command:
 
 ```bash
-export DEMO_ENV=prod
+ACCOUNT=xxx REGION=eu-west-2 ./infrastructure/scripts/build-and-push.sh
 ```
 
-Example:
+## Deploy services
+
+We are gonna use helm. For that we need to configure kubectl.
+
+Let's fetch configs for our clusters:
 
 ```bash
-FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=prod EC2_SSH_KEY=denis ./infrastructure/scripts/deploy.sh
-FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=staging EC2_SSH_KEY=denis ./infrastructure/scripts/deploy.sh
+aws eks update-kubeconfig --region eu-west-2 --name demo-eks-cluster-prod
+aws eks update-kubeconfig --region eu-west-2 --name demo-eks-cluster-staging
+
+kubectl config get-contexts
 ```
 
-This will deploy an two envs with EKS cluster and two PostgreSQL DBs.
+Copy the `NAME` of the corresponding context and run:
+```bash
+kubectl config use-context <STAGING NAME>
+DEMO_ENV=staging ./infrastructure/scripts/install-all.sh
+```
+
+The same procedure for prod cluster:
+```bash
+kubectl config use-context <PROD NAME>
+DEMO_ENV=prod ./infrastructure/scripts/install-all.sh
+```
+
+## Configure DNS
+
+Get load balancer names for staging:
+```bash
+kubectl config use-context <STAGING NAME>
+kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+```
+
+and prod:
+```bash
+kubectl config use-context <PROD NAME>
+kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+```
+
+Create an A records in Route53 for this NLBs. See [docs](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-elb-load-balancer.html):
+
+```text
+staging.tdk-microservices-demo.com -> <STAGING NLB>
+tdk-microservices-demo.com -> <PROD NLB>
+```
 
 ## Appendix: Pagila dump splitting:
 
