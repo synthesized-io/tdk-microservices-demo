@@ -7,10 +7,10 @@ on:
 
 env:
   AWS_REGION: eu-west-2
-  ECR_REPOSITORY_FILMS: 248441125472.dkr.ecr.eu-west-2.amazonaws.com/demo-repo-films
-  ECR_REPOSITORY_PAYMENTS: 248441125472.dkr.ecr.eu-west-2.amazonaws.com/demo-repo-payments
-  STAGING_CONTEXT: arn:aws:eks:eu-west-2:248441125472:cluster/demo-eks-cluster-staging
-  PROD_CONTEXT: arn:aws:eks:eu-west-2:248441125472:cluster/demo-eks-cluster-prod
+  AWS_ACCOUNT_ID: 248441125472
+  KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
+  STAGING_CLUSTER_NAME: demo-eks-cluster-staging
+  PROD_CLUSTER_NAME: demo-eks-cluster-staging
 
 jobs:
   build-and-deploy-staging:
@@ -42,7 +42,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.ECR_REPOSITORY_FILMS }}:${{ env.SHORT_SHA }}
+          tags: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-repo-films:${{ env.SHORT_SHA }}
           file: Dockerfile.films
 
       - name: Build and push payments Docker image
@@ -50,15 +50,18 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.ECR_REPOSITORY_PAYMENTS }}:${{ env.SHORT_SHA }}
+          tags: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com:${{ env.SHORT_SHA }}
           file: Dockerfile.payments
 
       - name: Set up Kubernetes environment
         uses: azure/setup-kubectl@v1
 
+      - name: Update kubeconfig for staging
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.STAGING_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
+
       - name: Deploy to staging
         run: |
-          kubectl config use-context ${{ env.STAGING_CONTEXT }}
+          kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.STAGING_CLUSTER_NAME }}
           helm upgrade --install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/staging/values-staging.yaml \
             --namespace tdk-microservices-demo \
@@ -80,10 +83,13 @@ jobs:
     needs: build-and-deploy-staging
 
     steps:
+      - name: Update kubeconfig for prod
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.STAGING_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
+
       - name: Deploy to production
         if: github.event_name == 'workflow_dispatch'
         run: |
-          kubectl config use-context ${{ env.PROD_CONTEXT }}
+          kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.PROD_CLUSTER_NAME
           helm upgrade --install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/production/values-production.yaml \
             --namespace tdk-microservices-demo \
