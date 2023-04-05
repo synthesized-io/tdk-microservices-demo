@@ -9,6 +9,8 @@ env:
   AWS_REGION: eu-west-2
   ECR_REPOSITORY_FILMS: 248441125472.dkr.ecr.eu-west-2.amazonaws.com/demo-repo-films
   ECR_REPOSITORY_PAYMENTS: 248441125472.dkr.ecr.eu-west-2.amazonaws.com/demo-repo-payments
+  STAGING_CONTEXT: arn:aws:eks:eu-west-2:248441125472:cluster/demo-eks-cluster-staging
+  PROD_CONTEXT: arn:aws:eks:eu-west-2:248441125472:cluster/demo-eks-cluster-prod
 
 jobs:
   build-and-deploy-staging:
@@ -56,7 +58,7 @@ jobs:
 
       - name: Deploy to staging
         run: |
-          kubectl config use-context your-staging-context
+          kubectl config use-context ${{ env.STAGING_CONTEXT }}
           helm upgrade --install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/staging/values-staging.yaml \
             --namespace tdk-microservices-demo \
@@ -81,7 +83,7 @@ jobs:
       - name: Deploy to production
         if: github.event_name == 'workflow_dispatch'
         run: |
-          kubectl config use-context your-production-context
+          kubectl config use-context ${{ env.PROD_CONTEXT }}
           helm upgrade --install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/production/values-production.yaml \
             --namespace tdk-microservices-demo \
