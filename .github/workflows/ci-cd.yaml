@@ -74,6 +74,11 @@ jobs:
           curl --location --remote-name --silent --show-error "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz"
           sudo tar -xzf eksctl_$(uname -s)_amd64.tar.gz -C /usr/local/bin/
           sudo chmod +x /usr/local/bin/eksctl
+          
+
+      - name: Output caller
+        run: |
+          aws sts get-caller-identity --query 'Arn' --output text
 
       - name: Add current role to EKS cluster
         run: |
