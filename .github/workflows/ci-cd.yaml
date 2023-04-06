@@ -57,7 +57,9 @@ jobs:
         uses: azure/setup-kubectl@v1
 
       - name: Update kubeconfig for staging
-        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.STAGING_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.STAGING_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
+          cat ${{ env.KUBECONFIG }}
 
       - name: Deploy to staging
         run: |
