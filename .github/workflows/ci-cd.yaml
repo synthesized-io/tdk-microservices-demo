@@ -63,7 +63,7 @@ jobs:
         run: |
           kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.STAGING_CLUSTER_NAME }}
           helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
-            --values ./infrastructure/helm/environments/staging/values-staging.yaml \
+            --values ./infrastructure/helm/environements/staging/values-staging.yaml \
             --namespace tdk-microservices-demo \
             --set services.films.image.tag=${{ env.SHORT_SHA }} \
             --set services.payments.image.tag=${{ env.SHORT_SHA }}
