@@ -72,8 +72,8 @@ jobs:
       - name: Install eksctl
         run: |
           curl --location --remote-name --silent --show-error "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz"
-          tar -xzf eksctl_$(uname -s)_amd64.tar.gz --strip-components=1 -C /usr/local/bin/
-          chmod +x /usr/local/bin/eksctl
+          sudo tar -xzf eksctl_$(uname -s)_amd64.tar.gz -C /usr/local/bin/
+          sudo chmod +x /usr/local/bin/eksctl
 
       - name: Add current role to EKS cluster
         run: |
