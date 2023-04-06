@@ -37,21 +37,21 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and push films Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-repo-films:${{ env.SHORT_SHA }}
-          file: Dockerfile.films
-
-      - name: Build and push payments Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-repo-payments:${{ env.SHORT_SHA }}
-          file: Dockerfile.payments
+#      - name: Build and push films Docker image
+#        uses: docker/build-push-action@v2
+#        with:
+#          context: .
+#          push: true
+#          tags: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-repo-films:${{ env.SHORT_SHA }}
+#          file: Dockerfile.films
+#
+#      - name: Build and push payments Docker image
+#        uses: docker/build-push-action@v2
+#        with:
+#          context: .
+#          push: true
+#          tags: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-repo-payments:${{ env.SHORT_SHA }}
+#          file: Dockerfile.payments
 
       - name: Set up Kubernetes environment
         uses: azure/setup-kubectl@v1
@@ -68,6 +68,10 @@ jobs:
 #            --namespace tdk-microservices-demo \
 #            --set services.films.image.tag=${{ env.SHORT_SHA }} \
 #            --set services.payments.image.tag=${{ env.SHORT_SHA }}
+
+      - name: Check caller identity
+        run: |
+          aws sts get-caller-identity
 
       - name: Get list of nodes
         run: |
