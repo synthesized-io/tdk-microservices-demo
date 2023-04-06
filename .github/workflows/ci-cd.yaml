@@ -69,13 +69,20 @@ jobs:
 #            --set services.films.image.tag=${{ env.SHORT_SHA }} \
 #            --set services.payments.image.tag=${{ env.SHORT_SHA }}
 
-      - name: Check caller identity
+      - name: Install eksctl
         run: |
-          aws sts get-caller-identity
+          curl --location --remote-name --silent --show-error "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz"
+          tar -xzf eksctl_$(uname -s)_amd64.tar.gz --strip-components=1 -C /usr/local/bin/
+          chmod +x /usr/local/bin/eksctl
+
+      - name: Add current role to EKS cluster
+        run: |
+          CURRENT_ROLE_ARN=$(aws sts get-caller-identity --query 'Arn' --output text)
+          eksctl create iamidentitymapping --cluster ${{ env.STAGING_CLUSTER_NAME }} --arn $CURRENT_ROLE_ARN --group system:masters --username admin1
 
       - name: Get list of nodes
         run: |
-          kubectl get nodes --kubeconfig ${{ env.KUBECONFIG }}
+          kubectl get nodes
 
       - name: Run tests
         run: |
