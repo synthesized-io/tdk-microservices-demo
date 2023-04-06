@@ -10,7 +10,7 @@ env:
   AWS_ACCOUNT_ID: 248441125472
   KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
   STAGING_CLUSTER_NAME: demo-eks-cluster-staging
-  PROD_CLUSTER_NAME: demo-eks-cluster-staging
+  PROD_CLUSTER_NAME: demo-eks-cluster-prod
 
 jobs:
   build-and-deploy-staging:
@@ -84,7 +84,7 @@ jobs:
 
     steps:
       - name: Update kubeconfig for prod
-        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.STAGING_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.PROD_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
 
       - name: Deploy to production
         if: github.event_name == 'workflow_dispatch'
