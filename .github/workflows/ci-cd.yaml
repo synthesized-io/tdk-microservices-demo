@@ -59,7 +59,7 @@ jobs:
       - name: Update kubeconfig for staging
         run: |
           aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.STAGING_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
-          cat ${{ env.KUBECONFIG }}
+          aws eks get-token --region eu-west-2 --cluster-name kubectl
 
       - name: Deploy to staging
         run: |
