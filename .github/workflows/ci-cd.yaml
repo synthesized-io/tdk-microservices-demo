@@ -62,7 +62,7 @@ jobs:
       - name: Deploy to staging
         run: |
           kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.STAGING_CLUSTER_NAME }}
-          helm upgrade --install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
+          helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/staging/values-staging.yaml \
             --namespace tdk-microservices-demo \
             --set services.films.image.tag=${{ env.SHORT_SHA }} \
@@ -90,7 +90,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.PROD_CLUSTER_NAME }}
-          helm upgrade --install tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
+          helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/production/values-production.yaml \
             --namespace tdk-microservices-demo \
             --set services.films.image.tag=${{ env.SHORT_SHA }} \
