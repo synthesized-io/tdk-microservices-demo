@@ -63,31 +63,11 @@ jobs:
       - name: Deploy to staging
         run: |
           kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.STAGING_CLUSTER_NAME }}
-#          helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
-#            --values ./infrastructure/helm/environments/staging/values-staging.yaml \
-#            --namespace tdk-microservices-demo \
-#            --set services.films.image.tag=${{ env.SHORT_SHA }} \
-#            --set services.payments.image.tag=${{ env.SHORT_SHA }}
-
-      - name: Install eksctl
-        run: |
-          curl --location --remote-name --silent --show-error "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz"
-          sudo tar -xzf eksctl_$(uname -s)_amd64.tar.gz -C /usr/local/bin/
-          sudo chmod +x /usr/local/bin/eksctl
-          
-
-      - name: Output caller
-        run: |
-          aws sts get-caller-identity --query 'Arn' --output text
-
-      - name: Add current role to EKS cluster
-        run: |
-          CURRENT_ROLE_ARN=$(aws sts get-caller-identity --query 'Arn' --output text)
-          eksctl create iamidentitymapping --cluster ${{ env.STAGING_CLUSTER_NAME }} --arn $CURRENT_ROLE_ARN --group system:masters --username admin1
-
-      - name: Get list of nodes
-        run: |
-          kubectl get nodes
+          helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
+            --values ./infrastructure/helm/environments/staging/values-staging.yaml \
+            --namespace tdk-microservices-demo \
+            --set services.films.image.tag=${{ env.SHORT_SHA }} \
+            --set services.payments.image.tag=${{ env.SHORT_SHA }}
 
       - name: Run tests
         run: |
