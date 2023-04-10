@@ -29,8 +29,8 @@ Also, make sure you have AWS CLI installed: [docs](https://docs.aws.amazon.com/c
 ### Create environments in AWS
 
 ```bash
-FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=prod ./infrastructure/scripts/create-env.sh
-FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=staging ./infrastructure/scripts/create-env.sh
+FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 REGION=eu-west-2  DEMO_ENV=prod ./infrastructure/scripts/create-env.sh
+FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 REGION=eu-west-2 DEMO_ENV=staging ./infrastructure/scripts/create-env.sh
 ```
 
 This will deploy two envs with EKS cluster and two PostgreSQL DBs.
@@ -38,8 +38,8 @@ This will deploy two envs with EKS cluster and two PostgreSQL DBs.
 ## Create Docker registry for both services
 
 ```bash
-SERVICE_NAME=films ./infrastructure/scripts/create-docker-registry.sh
-SERVICE_NAME=payments ./infrastructure/scripts/create-docker-registry.sh
+SERVICE_NAME=films REGION=eu-west-2 ./infrastructure/scripts/create-docker-registry.sh
+SERVICE_NAME=payments REGION=eu-west-2 ./infrastructure/scripts/create-docker-registry.sh
 ```
 Wait unit registries are created.
 
