@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - heml-charts
+      - ci-cd
 
 env:
   AWS_REGION: eu-west-2
@@ -67,7 +68,9 @@ jobs:
             --values ./infrastructure/helm/environments/staging/values-staging.yaml \
             --namespace tdk-microservices-demo \
             --set services.films.image.tag=${{ env.SHORT_SHA }} \
-            --set services.payments.image.tag=${{ env.SHORT_SHA }}
+            --set services.payments.image.tag=${{ env.SHORT_SHA }} \
+            --create-namespace \
+            --install
 
       - name: Run tests
         run: |
