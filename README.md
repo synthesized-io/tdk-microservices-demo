@@ -64,11 +64,19 @@ aws eks update-kubeconfig --region eu-west-2 --name demo-eks-cluster-staging
 kubectl config get-contexts
 ```
 
+Copy secret files from `infrastructure/helm/environments/staging/films-secret-staging.example.yaml` to `infrastructure/helm/environments/staging/films-secret-staging.yaml` and fill values.
+
+Copy secret files from `infrastructure/helm/environments/staging/payments-secret-staging.example.yaml` to `infrastructure/helm/environments/staging/payments-secret-staging.yaml` and fill values.
+
 Copy the `NAME` of the corresponding context and run:
 ```bash
 kubectl config use-context <STAGING NAME>
 DEMO_ENV=staging ./infrastructure/scripts/install-all.sh
 ```
+
+Copy secret files from `infrastructure/helm/environments/prod/films-secret-prod.example.yaml` to `infrastructure/helm/environments/prod/films-secret-prod.yaml` and fill values.
+
+Copy secret files from `infrastructure/helm/environments/prod/payments-secret-prod.example.yaml` to `infrastructure/helm/environments/prod/payments-secret-prod.yaml` and fill values.
 
 The same procedure for prod cluster:
 ```bash

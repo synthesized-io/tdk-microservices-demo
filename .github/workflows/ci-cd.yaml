@@ -68,9 +68,7 @@ jobs:
             --values ./infrastructure/helm/environments/staging/values-staging.yaml \
             --namespace tdk-microservices-demo \
             --set services.films.image.tag=${{ env.SHORT_SHA }} \
-            --set services.payments.image.tag=${{ env.SHORT_SHA }} \
-            --create-namespace \
-            --install
+            --set services.payments.image.tag=${{ env.SHORT_SHA }}
 
       - name: Run tests
         run: |
@@ -79,7 +77,7 @@ jobs:
       - name: Rollback on test failure
         if: ${{ failure() }}
         run: |
-          helm rollback tdk-microservices-demo
+          helm rollback tdk-microservices-demo --namespace tdk-microservices-demo
           exit 1
 
   deploy-to-production:
@@ -95,7 +93,7 @@ jobs:
         run: |
           kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.PROD_CLUSTER_NAME }}
           helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
-            --values ./infrastructure/helm/environments/production/values-production.yaml \
+            --values ./infrastructure/helm/environments/production/values-prod.yaml \
             --namespace tdk-microservices-demo \
             --set services.films.image.tag=${{ env.SHORT_SHA }} \
             --set services.payments.image.tag=${{ env.SHORT_SHA }}
