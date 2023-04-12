@@ -1,14 +1,13 @@
 name: CI/CD
 
-on:
-  push:
-    branches:
-      - heml-charts
-      - ci-cd
+#on:
+#  push:
+#    branches:
+#      - heml-charts
+#      - ci-cd
 
 env:
   AWS_REGION: eu-west-2
-  AWS_ACCOUNT_ID: 248441125472
   KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
   STAGING_CLUSTER_NAME: demo-eks-cluster-staging
   PROD_CLUSTER_NAME: demo-eks-cluster-prod
@@ -48,7 +47,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-repo-films:${{ env.SHORT_SHA }}
+          tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-repo-films:${{ env.SHORT_SHA }}
           file: Dockerfile.films
 
       - name: Build and push payments Docker image
@@ -56,7 +55,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-repo-payments:${{ env.SHORT_SHA }}
+          tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-repo-payments:${{ env.SHORT_SHA }}
           file: Dockerfile.payments
 
       - name: Set up Kubernetes environment
@@ -68,7 +67,7 @@ jobs:
 
       - name: Deploy to staging
         run: |
-          kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.STAGING_CLUSTER_NAME }}
+          kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:cluster/${{ env.STAGING_CLUSTER_NAME }}
           helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/staging/values-staging.yaml \
             --namespace tdk-microservices-demo \
@@ -96,7 +95,7 @@ jobs:
       - name: Deploy to production
         if: github.event_name == 'workflow_dispatch'
         run: |
-          kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:cluster/${{ env.PROD_CLUSTER_NAME }}
+          kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:cluster/${{ env.PROD_CLUSTER_NAME }}
           helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
             --values ./infrastructure/helm/environments/production/values-prod.yaml \
             --namespace tdk-microservices-demo \
