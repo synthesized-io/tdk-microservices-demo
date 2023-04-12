@@ -133,7 +133,7 @@ pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_paym
 2. Create access key for the created account
 3. Fill GitHub repository secrets `AWS_ACCESS_KEY_ID`, `AWS_ACCOUNT_ID`, `AWS_SECRET_ACCESS_KEY`.
 4. Add access to CI user for both prod and staging environments
-    * Download existing configmap and save it to file ``: 
+    * Download existing configmap and save it to file `aws-auth-cm.yaml`: 
       ```bash
       kubectl describe configmap -n kube-system aws-auth
       ```
@@ -167,7 +167,7 @@ pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_paym
             - system:bootstrappers
             - system:nodes
       mapUsers: |
-        - userarn: <ARM of CI account>
+        - userarn: <ARN of CI account>
           username: tdk-microservices-demo
           groups:
             - system:masters
