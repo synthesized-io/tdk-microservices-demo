@@ -124,7 +124,7 @@ pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_paym
 ```
 
 
-## Configure CI/CD
+### Configure CI/CD
 
 1. [Create AWS user](https://eu-west-2.console.aws.amazon.com/iamv2/home?region=eu-west-2#/users) to be used in CI/CD with the attached roles:
     * `arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess`
@@ -133,9 +133,9 @@ pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_paym
 2. Create access key for the created account
 3. Fill GitHub repository secrets `AWS_ACCESS_KEY_ID`, `AWS_ACCOUNT_ID`, `AWS_SECRET_ACCESS_KEY`.
 4. Add access to CI user for both prod and staging environments
-    * Download existing configmap and save it to file `aws-auth-cm.yaml`: 
+    * Edit the configmap `aws-auth`: 
       ```bash
-      kubectl describe configmap -n kube-system aws-auth
+      kubectl edit configmap -n kube-system aws-auth
       ```
       There should be something like
       ```yaml
@@ -145,12 +145,12 @@ pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_paym
       name: aws-auth
       namespace: kube-system
       data:
-      mapRoles: |
-        - rolearn: <EKSNodeRole>
-          username: system:node:{{EC2PrivateDNSName}}
-          groups:
-            - system:bootstrappers
-            - system:nodes
+        mapRoles: |
+          - rolearn: <EKSNodeRole>
+            username: system:node:{{EC2PrivateDNSName}}
+            groups:
+              - system:bootstrappers
+              - system:nodes
          ```
    * Add the CI user to the `username` key:
       ```yaml
@@ -160,20 +160,16 @@ pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_paym
       name: aws-auth
       namespace: kube-system
       data:
-      mapRoles: |
-        - rolearn: <EKSNodeRole>
-          username: system:node:{{EC2PrivateDNSName}}
-          groups:
-            - system:bootstrappers
-            - system:nodes
-      mapUsers: |
-        - userarn: <ARN of CI account>
-          username: tdk-microservices-demo
-          groups:
-            - system:masters
+        mapRoles: |
+          - rolearn: <EKSNodeRole>
+            username: system:node:{{EC2PrivateDNSName}}
+            groups:
+              - system:bootstrappers
+              - system:nodes
+        mapUsers: |
+          - userarn: <ARN of CI account>
+            username: tdk-microservices-demo
+            groups:
+              - system:masters
 
       ```
-   * Apply changes:
-       ```bash
-       kubectl apply -f aws-auth-cm.yaml
-       ```
