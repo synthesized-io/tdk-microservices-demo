@@ -1,10 +1,9 @@
 name: CI/CD
 
-#on:
-#  push:
-#    branches:
-#      - heml-charts
-#      - ci-cd
+on:
+  push:
+    branches:
+      - ci-cd
 
 env:
   AWS_REGION: eu-west-2

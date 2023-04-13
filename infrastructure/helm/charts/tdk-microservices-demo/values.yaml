@@ -31,19 +31,38 @@ services:
       pullPolicy: Always
       containerPort: 8080
 
+#ingress:
+#  enabled: false
+#  className: "nginx"
+#  annotations: {}
+#  hosts:
+#    - host: chart-example.local
+#      paths:
+#        - path: /
+#          pathType: ImplementationSpecific
+#  tls: []
+
 ingress:
-  enabled: false
-  className: "nginx"
-  annotations: {}
+  enabled: true
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+    - host: to_override
+      http:
+        paths:
+          - path: /api/v1/films
+            pathType: Prefix
+            backend:
+              service:
+                name: films-api
+                port:
+                  number: 80
+          - path: /api/v1/payments
+            pathType: Prefix
+            backend:
+              service:
+                name: payments-api
+                port:
+                  number: 80
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 resources:
    limits:

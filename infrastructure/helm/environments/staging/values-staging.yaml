@@ -1,21 +1,3 @@
 ingress:
-  enabled: true
   hosts:
     - host: staging.tdk-microservices-demo.synthesized.io
-      http:
-        paths:
-        - path: /api/v1/films
-          pathType: Prefix
-          backend:
-            service:
-              name: films-api
-              port:
-                number: 80
-        - path: /api/v1/payments
-          pathType: Prefix
-          backend:
-            service:
-              name: payments-api
-              port:
-                number: 80
-  tls: []
