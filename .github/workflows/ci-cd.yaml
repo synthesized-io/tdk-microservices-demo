@@ -3,10 +3,7 @@ name: CI/CD
 on:
   push:
     branches:
-      - 'master'
-  pull_request:
-    branches:
-      - '*'
+      - tdk
 
 env:
   AWS_REGION: eu-west-2
@@ -59,6 +56,35 @@ jobs:
           push: true
           tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-repo-payments:${{ env.SHORT_SHA }}
           file: Dockerfile.payments
+
+      - name: Mask Payments Staging DBs via TDK
+        uses: synthesized-io/tdk-gha@v1
+        with:
+          input_url: ${{ secrets.PROD_PAYMENTS_DATASOURCE_URL }}
+          input_username: ${{ secrets.PAYMENTS_USERNAME }}
+          input_password: ${{ secrets.PAYMENTS_PASSWORD }}
+          output_url: ${{ secrets.PAYMENTS_DATASOURCE_URL }}
+          output_username: ${{ secrets.PAYMENTS_USERNAME }}
+          output_password: ${{ secrets.PAYMENTS_PASSWORD }}
+          user_config: |
+            default_config:
+              mode: MASKING
+            schema_creation_mode: DROP_AND_CREATE
+
+      - name: Mask Films Staging DBs via TDK
+        uses: synthesized-io/tdk-gha@v1
+        with:
+          input_url: ${{ secrets.PROD_FILMS_DATASOURCE_URL }}
+          input_username: ${{ secrets.FILMS_USERNAME }}
+          input_password: ${{ secrets.FILMS_PASSWORD }}
+          output_url: ${{ secrets.FILMS_DATASOURCE_URL }}
+          output_username: ${{ secrets.FILMS_USERNAME }}
+          output_password: ${{ secrets.FILMS_PASSWORD }}
+          user_config: |
+            default_config:
+              mode: MASKING
+            schema_creation_mode: DROP_AND_CREATE
+      
 
       - name: Set up Kubernetes environment
         uses: azure/setup-kubectl@v1
