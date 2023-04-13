@@ -58,7 +58,7 @@ jobs:
           file: Dockerfile.payments
 
       - name: Mask Payments Staging DBs via TDK
-        uses: synthesized-io/tdk-gha@v1
+        uses: synthesized-io/tdk-gha@v1.0
         with:
           input_url: ${{ secrets.PROD_PAYMENTS_DATASOURCE_URL }}
           input_username: ${{ secrets.PAYMENTS_USERNAME }}
@@ -72,7 +72,7 @@ jobs:
             schema_creation_mode: DROP_AND_CREATE
 
       - name: Mask Films Staging DBs via TDK
-        uses: synthesized-io/tdk-gha@v1
+        uses: synthesized-io/tdk-gha@v1.0
         with:
           input_url: ${{ secrets.PROD_FILMS_DATASOURCE_URL }}
           input_username: ${{ secrets.FILMS_USERNAME }}
