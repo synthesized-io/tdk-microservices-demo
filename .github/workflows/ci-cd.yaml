@@ -88,9 +88,6 @@ jobs:
     needs: build-and-deploy-staging
 
     steps:
-      - name: Update kubeconfig for prod
-        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.PROD_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
