@@ -29,8 +29,8 @@ Also, make sure you have AWS CLI installed: [docs](https://docs.aws.amazon.com/c
 ### Create environments in AWS
 
 ```bash
-FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=prod ./infrastructure/scripts/create-env.sh
-FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 DEMO_ENV=staging ./infrastructure/scripts/create-env.sh
+FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 REGION=eu-west-2  DEMO_ENV=prod ./infrastructure/scripts/create-env.sh
+FILMS_DB_PASSWORD=films123 PAYMENTS_DB_PASSWORD=payments123 REGION=eu-west-2 DEMO_ENV=staging ./infrastructure/scripts/create-env.sh
 ```
 
 This will deploy two envs with EKS cluster and two PostgreSQL DBs.
@@ -38,8 +38,8 @@ This will deploy two envs with EKS cluster and two PostgreSQL DBs.
 ## Create Docker registry for both services
 
 ```bash
-SERVICE_NAME=films ./infrastructure/scripts/create-docker-registry.sh
-SERVICE_NAME=payments ./infrastructure/scripts/create-docker-registry.sh
+SERVICE_NAME=films REGION=eu-west-2 ./infrastructure/scripts/create-docker-registry.sh
+SERVICE_NAME=payments REGION=eu-west-2 ./infrastructure/scripts/create-docker-registry.sh
 ```
 Wait unit registries are created.
 
@@ -64,11 +64,19 @@ aws eks update-kubeconfig --region eu-west-2 --name demo-eks-cluster-staging
 kubectl config get-contexts
 ```
 
+Copy the secret file from `infrastructure/helm/environments/staging/films-secret-staging.example.yaml` to `infrastructure/helm/environments/staging/films-secret-staging.yaml` and fill values.
+
+Copy the secret file from `infrastructure/helm/environments/staging/payments-secret-staging.example.yaml` to `infrastructure/helm/environments/staging/payments-secret-staging.yaml` and fill values.
+
 Copy the `NAME` of the corresponding context and run:
 ```bash
 kubectl config use-context <STAGING NAME>
 DEMO_ENV=staging ./infrastructure/scripts/install-all.sh
 ```
+
+Copy the secret file from `infrastructure/helm/environments/prod/films-secret-prod.example.yaml` to `infrastructure/helm/environments/prod/films-secret-prod.yaml` and fill values.
+
+Copy the secret file from `infrastructure/helm/environments/prod/payments-secret-prod.example.yaml` to `infrastructure/helm/environments/prod/payments-secret-prod.yaml` and fill values.
 
 The same procedure for prod cluster:
 ```bash
@@ -114,3 +122,54 @@ python3 infrastructure/scripts/split.py
 pg_dump -h localhost -U tdk_user -f "pagila_films.sql" --no-owner pagila_films
 pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_payments
 ```
+
+
+### Configure CI/CD
+
+1. [Create AWS user](https://eu-west-2.console.aws.amazon.com/iamv2/home?region=eu-west-2#/users) to be used in CI/CD with the attached roles:
+    * `arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess`
+    * `arn:aws:iam::aws:policy/AmazonEKSClusterPolicy`
+    * `arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy`
+2. Create access key for the created account
+3. Fill GitHub repository secrets `AWS_ACCESS_KEY_ID`, `AWS_ACCOUNT_ID`, `AWS_SECRET_ACCESS_KEY`.
+4. Add access to CI user for both prod and staging environments
+    * Edit the configmap `aws-auth`: 
+      ```bash
+      kubectl edit configmap -n kube-system aws-auth
+      ```
+      There should be something like
+      ```yaml
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+      name: aws-auth
+      namespace: kube-system
+      data:
+        mapRoles: |
+          - rolearn: <EKSNodeRole>
+            username: system:node:{{EC2PrivateDNSName}}
+            groups:
+              - system:bootstrappers
+              - system:nodes
+         ```
+   * Add the CI user to the `username` key:
+      ```yaml
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+      name: aws-auth
+      namespace: kube-system
+      data:
+        mapRoles: |
+          - rolearn: <EKSNodeRole>
+            username: system:node:{{EC2PrivateDNSName}}
+            groups:
+              - system:bootstrappers
+              - system:nodes
+        mapUsers: |
+          - userarn: <ARN of CI account>
+            username: tdk-microservices-demo
+            groups:
+              - system:masters
+
+      ```

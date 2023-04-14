@@ -3,6 +3,7 @@
 set -euxo pipefail
 
 aws cloudformation create-stack \
+  --region "$REGION" \
   --capabilities CAPABILITY_IAM \
   --stack-name demo-eks-cluster-"$DEMO_ENV" \
   --template-body file://infrastructure/cloudformation/demo-cluster.yaml \
