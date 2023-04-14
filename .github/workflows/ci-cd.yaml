@@ -91,7 +91,18 @@ jobs:
       - name: Update kubeconfig for prod
         run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.PROD_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
 
-      - name: Deploy to production
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig for prod
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.PROD_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
+
+      - name: Deploy to prod
         if: github.event_name == 'workflow_dispatch'
         run: |
           kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:cluster/${{ env.PROD_CLUSTER_NAME }}
