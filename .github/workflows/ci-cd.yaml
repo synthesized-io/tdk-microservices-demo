@@ -58,6 +58,8 @@ jobs:
             --set-file envRenderSecret.SYNTHESIZED_INVENTORY="inventory.yaml" \
             --set envRenderSecret.SYNTHESIZED_KEY=${{ secrets.SYNTHESIZED_KEY }} \
             --set image.tag=latest \
+            --set cronJobLimit=0 \
+            --set cronJobFailedJobsLimit=0 \
             --namespace synthesized-tdk \
             --create-namespace \
             --install
