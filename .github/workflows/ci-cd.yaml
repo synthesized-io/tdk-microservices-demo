@@ -71,7 +71,6 @@ jobs:
           tdk_failed=$(kubectl get job $job_name -n synthesized-tdk -o jsonpath={.status.failed})  
           if [ -x "$tdk_failed" ] then 
               exit 1
-          fi
 
       - name: Login to Amazon ECR
         id: login-ecr
