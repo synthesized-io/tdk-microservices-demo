@@ -112,7 +112,7 @@ jobs:
           
           kubectl create namespace synthesized-tdk --dry-run=client -o yaml | kubectl apply -f -
           
-          helm install synthesized-tdk synthesized-tdk 
+          helm install synthesized-tdk synthesized-tdk \
             --namespace synthesized-tdk
             --set env.SYNTHESIZED_KEY=${{ env.SYNTHESIZED_KEY }} \
             --set env.SYNTHESIZED_USERCONFIG=${{ env.SYNTHESIZED_USERCONFIG }} \
@@ -124,7 +124,7 @@ jobs:
           
           tdk_failed=$(kubectl get job synthesized-tdk-cron -n synthesized-tdk -o jsonpath={.status.failed})  
           
-          helm uninstall synthesized-tdk --namespace synthesized-td
+          helm uninstall synthesized-tdk --namespace synthesized-tdk
           if [ -x "$tdk_failed" ] then 
               exit 1
           fi
