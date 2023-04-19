@@ -53,11 +53,11 @@ jobs:
           
           kubectl create namespace synthesized-tdk --dry-run=client -o yaml | kubectl apply -f -
           
-          pwd
+          echo ${{ secrets.SYNTHESIZED_INVENTORY }} >> inventory.yaml
           helm install synthesized-tdk synthesized-tdk \
             --namespace synthesized-tdk \
-            --set-file SYNTHESIZED_USERCONFIG="../tdk/config.yaml" \
-            --set envRenderSecret.SYNTHESIZED_KEY=${{ env.SYNTHESIZED_KEY }} \
+            --set-file env.SYNTHESIZED_USERCONFIG="../tdk/config.yaml" \
+            --set-file envRenderSecret.SYNTHESIZED_KEY="inventory.yaml" \
             --set envRenderSecret.SYNTHESIZED_INVENTORY=${{ secrets.SYNTHESIZED_INVENTORY }} \
             --set image.tag=latest
           
