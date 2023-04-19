@@ -58,20 +58,18 @@ jobs:
             --set-file envRenderSecret.SYNTHESIZED_INVENTORY="inventory.yaml" \
             --set envRenderSecret.SYNTHESIZED_KEY=${{ secrets.SYNTHESIZED_KEY }} \
             --set image.tag=latest \
-            --set cronJobLimit=0 \
-            --set cronJobFailedJobsLimit=0 \
             --namespace synthesized-tdk \
             --create-namespace \
             --install
           
-          kubectl create job --from=cronjob/synthesized-tdk-cron synthesized-tdk-cron -n synthesized-tdk
+          job_name=synthesized-tdk-cron-${{ env.SHORT_SHA }}
+          kubectl delete job $job_name
+          kubectl create job --from=cronjob/synthesized-tdk-cron $job_name -n synthesized-tdk
           
-          kubectl wait --for=jsonpath='{.status.phase}'=Running jobs/synthesized-tdk-cron -n synthesized-tdk
-          kubectl logs -f jobs/synthesized-tdk-cron -n synthesized-tdk
+          kubectl wait --for=jsonpath='{.status.phase}'=Running jobs/$job_name -n synthesized-tdk
+          kubectl logs -f jobs/$job_name -n synthesized-tdk
           
-          tdk_failed=$(kubectl get job synthesized-tdk-cron -n synthesized-tdk -o jsonpath={.status.failed})  
-          
-          helm uninstall synthesized-tdk --namespace synthesized-tdk
+          tdk_failed=$(kubectl get job $job_name -n synthesized-tdk -o jsonpath={.status.failed})  
           if [ -x "$tdk_failed" ] then 
               exit 1
           fi
