@@ -69,8 +69,8 @@ jobs:
           kubectl logs -f jobs/$job_name -n synthesized-tdk
           
           tdk_failed=$(kubectl get job $job_name -n synthesized-tdk -o jsonpath={.status.failed})  
-          if [ -x "$tdk_failed" ] then 
-              exit 1
+          if [ -z "$tdk_failed" ]; then 
+              exit 1;
 
       - name: Login to Amazon ECR
         id: login-ecr
