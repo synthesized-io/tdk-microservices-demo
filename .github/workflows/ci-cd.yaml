@@ -55,7 +55,7 @@ jobs:
           
           helm install synthesized-tdk synthesized-tdk \
             --namespace synthesized-tdk \
-            --set-file SYNTHESIZED_USERCONFIG=tdk/config.yaml
+            --set-file SYNTHESIZED_USERCONFIG=../tdk/config.yaml
             --set envRenderSecret.SYNTHESIZED_KEY=${{ env.SYNTHESIZED_KEY }} \
             --set envRenderSecret.SYNTHESIZED_INVENTORY=${{ secrets.SYNTHESIZED_INVENTORY }} \
             --set image.tag=latest
