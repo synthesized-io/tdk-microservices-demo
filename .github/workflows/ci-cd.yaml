@@ -66,7 +66,7 @@ jobs:
           
           kubectl create job --from=cronjob/synthesized-tdk-cron synthesized-tdk-cron -n synthesized-tdk
           
-          kubectl wait --for=condition=ready jobs/synthesized-tdk-cron -n synthesized-tdk
+          kubectl wait --for=jsonpath='{.status.phase}'=Running jobs/synthesized-tdk-cron -n synthesized-tdk
           kubectl logs -f jobs/synthesized-tdk-cron -n synthesized-tdk
           
           tdk_failed=$(kubectl get job synthesized-tdk-cron -n synthesized-tdk -o jsonpath={.status.failed})  
