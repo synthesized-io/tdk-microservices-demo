@@ -53,12 +53,12 @@ jobs:
           
           kubectl create namespace synthesized-tdk --dry-run=client -o yaml | kubectl apply -f -
           
-          echo ${{ secrets.SYNTHESIZED_INVENTORY }} >> inventory.yaml
+          echo "${{ secrets.SYNTHESIZED_INVENTORY }}" >> inventory.yaml
           helm install synthesized-tdk synthesized-tdk \
             --namespace synthesized-tdk \
             --set-file env.SYNTHESIZED_USERCONFIG="../tdk/config.yaml" \
-            --set-file envRenderSecret.SYNTHESIZED_KEY="inventory.yaml" \
-            --set envRenderSecret.SYNTHESIZED_INVENTORY=${{ secrets.SYNTHESIZED_INVENTORY }} \
+            --set-file envRenderSecret.SYNTHESIZED_INVENTORY="inventory.yaml" \
+            --set envRenderSecret.SYNTHESIZED_KEY=${{ secrets.SYNTHESIZED_KEY }} \
             --set image.tag=latest
           
           kubectl create job --from=cronjob/synthesized-tdk-cron synthesized-tdk-cron -n synthesized-tdk
