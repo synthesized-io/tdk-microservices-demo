@@ -12,12 +12,12 @@ transformation_configs:
     default_config:
       mode: "MASKING"
 
-  data_source_mapping:
-    payments:
-      source: "payments_prod"
-      targets:
-        - "payments_staging"
-    films:
-      source: "films_prod"
-      targets:
-        - "films_staging"
+data_source_mapping:
+  payments:
+    source: "payments_prod"
+    targets:
+      - "payments_staging"
+  films:
+    source: "films_prod"
+    targets:
+      - "films_staging"
