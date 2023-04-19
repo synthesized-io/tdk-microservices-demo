@@ -46,65 +46,6 @@ jobs:
           kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:cluster/${{ env.STAGING_CLUSTER_NAME }}
 
       - name: Run Synthesized TDK
-        env:
-          SYNTHESIZED_USERCONFIG: |
-            transformation_configs:
-              payments:
-                default_config:
-                  mode: "MASKING"
-                tables:
-                  - table_name_with_schema: "public.inventory"
-                    transformations:  
-                      - columns: [ "film_id" ]
-                        params:
-                          type: "unique_hashing"
-              films:
-                default_config:
-                  mode: "MASKING"
-            
-            data_source_mapping:
-              payments:
-                source: "payments_prod"
-                targets:
-                  - "payments_staging"
-              films:
-                source: "films_prod"
-                targets:
-                  - "films_staging"
-          SYNTHESIZED_INVENTORY: |
-            data_sources:
-              payments_staging:
-                jdbc_url: ${{ secrets.PAYMENTS_DATASOURCE_URL }}
-                user:
-                  type: raw
-                  value: ${{ secrets.PAYMENTS_USERNAME }}
-                password:
-                  type: raw
-                  value: ${{ secrets.PAYMENTS_PASSWORD }}
-              payments_prod:
-                jdbc_url: ${{ secrets.PROD_PAYMENTS_DATASOURCE_URL }}
-                user:
-                  type: raw
-                  value: ${{ secrets.PAYMENTS_USERNAME }}
-                password:
-                  type: raw
-                  value: ${{ secrets.PAYMENTS_PASSWORD }}
-              films_staging:
-                jdbc_url: ${{ secrets.FILMS_DATASOURCE_URL }}
-                user:
-                  type: raw
-                  value: ${{ secrets.FILMS_USERNAME }}
-                password:
-                  type: raw
-                  value: ${{ secrets.FILMS_PASSWORD }}
-              films_prod:
-                jdbc_url: ${{ secrets.PROD_FILMS_DATASOURCE_URL }}
-                user:
-                  type: raw
-                  value: ${{ secrets.FILMS_USERNAME }}
-                password:
-                  type: raw
-                  value: ${{ secrets.FILMS_PASSWORD }}
         run: |
           mkdir tdk-chart && cd tdk-chart
           helm pull oci://ghcr.io/synthesized-io/synthesized-tdk --version 0.1.4
@@ -114,9 +55,9 @@ jobs:
           
           helm install synthesized-tdk synthesized-tdk \
             --namespace synthesized-tdk \
-            --set env.SYNTHESIZED_KEY=${{ env.SYNTHESIZED_KEY }} \
-            --set env.SYNTHESIZED_USERCONFIG=${{ env.SYNTHESIZED_USERCONFIG }} \
-            --set env.SYNTHESIZED_INVENTORY=${{ env.SYNTHESIZED_INVENTORY }} \
+            --set-file SYNTHESIZED_USERCONFIG=tdk/config.yaml
+            --set envRenderSecret.SYNTHESIZED_KEY=${{ env.SYNTHESIZED_KEY }} \
+            --set envRenderSecret.SYNTHESIZED_INVENTORY=${{ secrets.SYNTHESIZED_INVENTORY }} \
             --set image.tag=latest
           
           kubectl create job --from=cronjob/synthesized-tdk-cron synthesized-tdk-cron -n synthesized-tdk
