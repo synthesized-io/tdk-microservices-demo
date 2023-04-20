@@ -60,47 +60,12 @@ jobs:
           options: "-O"
 
       - name: Run Synthesized TDK
-        env:
-          SYNTHESIZED_INVENTORY: |
-            data_sources:
-              payments_staging:
-                jdbc_url: jdbc:postgresql://${{ secrets.STAGING_PAYMENTS_DB_HOST }}:5432/payments
-                user:
-                  type: raw
-                  value: ${{ secrets.PAYMENTS_USERNAME }}
-                password:
-                  type: raw
-                  value: ${{ secrets.PAYMENTS_PASSWORD }}
-              payments_prod:
-                jdbc_url: jdbc:postgresql://${{ secrets.PROD_PAYMENTS_DB_HOST }}:5432/payments
-                user:
-                  type: raw
-                  value: ${{ secrets.PAYMENTS_USERNAME }}
-                password:
-                  type: raw
-                  value: ${{ secrets.PAYMENTS_PASSWORD }}
-              films_staging:
-                jdbc_url: jdbc:postgresql://${{ secrets.STAGING_FILMS_DB_HOST }}:5432/films
-                user:
-                  type: raw
-                  value: ${{ secrets.FILMS_USERNAME }}
-                password:
-                  type: raw
-                  value: ${{ secrets.FILMS_PASSWORD }}
-              films_prod:
-                jdbc_url: jdbc:postgresql://${{ secrets.PROD_FILMS_DB_HOST }}:5432/films
-                user:
-                  type: raw
-                  value: ${{ secrets.FILMS_USERNAME }}
-                password:
-                  type: raw
-                  value: ${{ secrets.FILMS_PASSWORD }}
         run: |
           mkdir tdk-chart && cd tdk-chart
           helm pull oci://ghcr.io/synthesized-io/synthesized-tdk --version 0.1.4
           tar xf $(pwd)/* && find $(pwd) -maxdepth 1 -type f -delete
           
-          echo ${{ env.SYNTHESIZED_INVENTORY }} | base64 -d > inventory.yaml
+          echo ${{ secrets.SYNTHESIZED_INVENTORY }} >> inventory.yaml
           
           helm upgrade synthesized-tdk synthesized-tdk \
             --set-file env.SYNTHESIZED_USERCONFIG="../tdk/config.yaml" \
@@ -121,12 +86,26 @@ jobs:
           if [ -z "$tdk_failed" ]; then 
               exit 1;
 
+      - name: Delete and recreate schema of Films DB
+        if: ${{ failure() }}
+        run: |
+          db_url=postgres://${{ secrets.FILMS_USERNAME }}:${{ secrets.FILMS_PASSWORD }}@${{ secrets.STAGING_FILMS_DB_HOST }}:5432/films
+          psql -d "$db_url" -c "DROP SCHEMA IF EXISTS public CASCADE;"
+          psql -d "$db_url" -c "CREATE SCHEMA IF NOT EXISTS schema_name;"
+
       - name: Films Dump Restore
         if: ${{ failure() }}
         uses: tj-actions/pg-restore@v4.5
         with:
           database_url: postgres://${{ secrets.FILMS_USERNAME }}:${{ secrets.FILMS_PASSWORD }}@${{ secrets.STAGING_FILMS_DB_HOST }}:5432/films
           backup_file: backups/films/backup-${{ env.SHORT_SHA }}.sql
+
+      - name: Delete and recreate schema of Payments DB
+        if: ${{ failure() }}
+        run: |
+          db_url=postgres://${{ secrets.PAYMENTS_USERNAME }}:${{ secrets.PAYMENTS_PASSWORD }}@${{ secrets.STAGING_PAYMENTS_DB_HOST }}:5432/payments
+          psql -d "$db_url" -c "DROP SCHEMA IF EXISTS public CASCADE;"
+          psql -d "$db_url" -c "CREATE SCHEMA IF NOT EXISTS schema_name;"
 
       - name: Payments Dump Restore
         if: ${{ failure() }}
