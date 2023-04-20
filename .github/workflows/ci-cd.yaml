@@ -100,7 +100,7 @@ jobs:
           helm pull oci://ghcr.io/synthesized-io/synthesized-tdk --version 0.1.4
           tar xf $(pwd)/* && find $(pwd) -maxdepth 1 -type f -delete
           
-          echo "${{ env.SYNTHESIZED_INVENTORY }}" >> inventory.yaml
+          echo ${{ env.SYNTHESIZED_INVENTORY }} | base64 -d > inventory.yaml
           
           helm upgrade synthesized-tdk synthesized-tdk \
             --set-file env.SYNTHESIZED_USERCONFIG="../tdk/config.yaml" \
@@ -122,12 +122,14 @@ jobs:
               exit 1;
 
       - name: Films Dump Restore
+        if: ${{ failure() }}
         uses: tj-actions/pg-restore@v4.5
         with:
           database_url: postgres://${{ secrets.FILMS_USERNAME }}:${{ secrets.FILMS_PASSWORD }}@${{ secrets.STAGING_FILMS_DB_HOST }}:5432/films
           backup_file: backups/films/backup-${{ env.SHORT_SHA }}.sql
 
       - name: Payments Dump Restore
+        if: ${{ failure() }}
         uses: tj-actions/pg-restore@v4.5
         with:
           database_url: postgres://${{ secrets.PAYMENTS_USERNAME }}:${{ secrets.PAYMENTS_PASSWORD }}@${{ secrets.STAGING_PAYMENTS_DB_HOST }}:5432/payments
