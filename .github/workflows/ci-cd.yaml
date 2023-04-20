@@ -65,7 +65,7 @@ jobs:
           helm pull oci://ghcr.io/synthesized-io/synthesized-tdk --version 0.1.4
           tar xf $(pwd)/* && find $(pwd) -maxdepth 1 -type f -delete
           
-          echo ${{ secrets.SYNTHESIZED_INVENTORY }} >> inventory.yaml
+          echo "${{ secrets.SYNTHESIZED_INVENTORY }}" > inventory.yaml
           
           helm upgrade synthesized-tdk synthesized-tdk \
             --set-file env.SYNTHESIZED_USERCONFIG="../tdk/config.yaml" \
@@ -91,7 +91,7 @@ jobs:
         run: |
           db_url=postgres://${{ secrets.FILMS_USERNAME }}:${{ secrets.FILMS_PASSWORD }}@${{ secrets.STAGING_FILMS_DB_HOST }}:5432/films
           psql -d "$db_url" -c "DROP SCHEMA IF EXISTS public CASCADE;"
-          psql -d "$db_url" -c "CREATE SCHEMA IF NOT EXISTS schema_name;"
+          psql -d "$db_url" -c "CREATE SCHEMA IF NOT EXISTS public;"
 
       - name: Films Dump Restore
         if: ${{ failure() }}
@@ -105,7 +105,7 @@ jobs:
         run: |
           db_url=postgres://${{ secrets.PAYMENTS_USERNAME }}:${{ secrets.PAYMENTS_PASSWORD }}@${{ secrets.STAGING_PAYMENTS_DB_HOST }}:5432/payments
           psql -d "$db_url" -c "DROP SCHEMA IF EXISTS public CASCADE;"
-          psql -d "$db_url" -c "CREATE SCHEMA IF NOT EXISTS schema_name;"
+          psql -d "$db_url" -c "CREATE SCHEMA IF NOT EXISTS public;"
 
       - name: Payments Dump Restore
         if: ${{ failure() }}
