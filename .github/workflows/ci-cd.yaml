@@ -45,13 +45,62 @@ jobs:
           aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.STAGING_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
           kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:cluster/${{ env.STAGING_CLUSTER_NAME }}
 
+      - name: Films Dump Backup
+        uses: tj-actions/pg-dump@v2.3
+        with:
+          database_url: postgres://${{ secrets.FILMS_USERNAME }}:${{ secrets.FILMS_PASSWORD }}@${{ secrets.STAGING_FILMS_DB_HOST }}:5432/films
+          path: backups/films/backup-${{ env.SHORT_SHA }}.sql
+          options: "-O"
+
+      - name: Payments Dump Backup
+        uses: tj-actions/pg-dump@v2.3
+        with:
+          database_url: postgres://${{ secrets.PAYMENTS_USERNAME }}:${{ secrets.PAYMENTS_PASSWORD }}@${{ secrets.STAGING_PAYMENTS_DB_HOST }}:5432/payments
+          path: backups/payments/backup-${{ env.SHORT_SHA }}.sql
+          options: "-O"
+
       - name: Run Synthesized TDK
+        env:
+          SYNTHESIZED_INVENTORY: |
+            data_sources:
+              payments_staging:
+                jdbc_url: jdbc:postgresql://${{ secrets.STAGING_PAYMENTS_DB_HOST }}:5432/payments
+                user:
+                  type: raw
+                  value: ${{ secrets.PAYMENTS_USERNAME }}
+                password:
+                  type: raw
+                  value: ${{ secrets.PAYMENTS_PASSWORD }}
+              payments_prod:
+                jdbc_url: jdbc:postgresql://${{ secrets.PROD_PAYMENTS_DB_HOST }}:5432/payments
+                user:
+                  type: raw
+                  value: ${{ secrets.PAYMENTS_USERNAME }}
+                password:
+                  type: raw
+                  value: ${{ secrets.PAYMENTS_PASSWORD }}
+              films_staging:
+                jdbc_url: jdbc:postgresql://${{ secrets.STAGING_FILMS_DB_HOST }}:5432/films
+                user:
+                  type: raw
+                  value: ${{ secrets.FILMS_USERNAME }}
+                password:
+                  type: raw
+                  value: ${{ secrets.FILMS_PASSWORD }}
+              films_prod:
+                jdbc_url: jdbc:postgresql://${{ secrets.PROD_FILMS_DB_HOST }}:5432/films
+                user:
+                  type: raw
+                  value: ${{ secrets.FILMS_USERNAME }}
+                password:
+                  type: raw
+                  value: ${{ secrets.FILMS_PASSWORD }}
         run: |
           mkdir tdk-chart && cd tdk-chart
           helm pull oci://ghcr.io/synthesized-io/synthesized-tdk --version 0.1.4
           tar xf $(pwd)/* && find $(pwd) -maxdepth 1 -type f -delete
           
-          echo "${{ secrets.SYNTHESIZED_INVENTORY }}" >> inventory.yaml
+          echo "${{ env.SYNTHESIZED_INVENTORY }}" >> inventory.yaml
           
           helm upgrade synthesized-tdk synthesized-tdk \
             --set-file env.SYNTHESIZED_USERCONFIG="../tdk/config.yaml" \
@@ -71,6 +120,18 @@ jobs:
           tdk_failed=$(kubectl get job $job_name -n synthesized-tdk -o jsonpath={.status.failed})  
           if [ -z "$tdk_failed" ]; then 
               exit 1;
+
+      - name: Films Dump Restore
+        uses: tj-actions/pg-restore@v4.5
+        with:
+          database_url: postgres://${{ secrets.FILMS_USERNAME }}:${{ secrets.FILMS_PASSWORD }}@${{ secrets.STAGING_FILMS_DB_HOST }}:5432/films
+          backup_file: backups/films/backup-${{ env.SHORT_SHA }}.sql
+
+      - name: Payments Dump Restore
+        uses: tj-actions/pg-restore@v4.5
+        with:
+          database_url: postgres://${{ secrets.PAYMENTS_USERNAME }}:${{ secrets.PAYMENTS_PASSWORD }}@${{ secrets.STAGING_PAYMENTS_DB_HOST }}:5432/payments
+          backup_file: backups/payments/backup-${{ env.SHORT_SHA }}.sql
 
       - name: Login to Amazon ECR
         id: login-ecr
