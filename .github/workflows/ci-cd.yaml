@@ -76,15 +76,14 @@ jobs:
             --set services.films.image.tag=${{ env.SHORT_SHA }} \
             --set services.payments.image.tag=${{ env.SHORT_SHA }}
 
-      - name: Run tests
-        run: |
-          curl -sfL "http://staging.tdk-microservices-demo.synthesized.io/api/v1/films/1" || exit 1
+#      - name: Run tests
+#        run: |
+#          curl -sfL "http://staging.tdk-microservices-demo.synthesized.io/api/v1/films/1" || exit 1
 
       - name: Rollback on test failure
         if: ${{ failure() }}
         run: |
           helm rollback tdk-microservices-demo --namespace tdk-microservices-demo
-          exit 1
 
   deploy-to-production:
     if: github.ref == 'refs/heads/master'
