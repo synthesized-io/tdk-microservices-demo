@@ -12,6 +12,8 @@ transformation_configs:
         mode: "KEEP"
     safety_mode: "RELAXED"
     cycle_resolution_strategy: "DELETE_NOT_REQUIRED"
+    schema_creation_mode: "DO_NOT_CREATE"
+    table_truncation_mode: "TRUNCATE"
 
   films:
     default_config:
@@ -26,6 +28,8 @@ transformation_configs:
         mode: "KEEP"
     safety_mode: "RELAXED"
     cycle_resolution_strategy: "DELETE_NOT_REQUIRED"
+    schema_creation_mode: "DO_NOT_CREATE"
+    table_truncation_mode: "TRUNCATE"
 
 data_source_mapping:
   payments:
