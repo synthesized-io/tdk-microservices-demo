@@ -15,7 +15,7 @@ transformation_configs:
     default_config:
       mode: "MASKING"
     tables:
-      - table_name_with_schema: "public.films"
+      - table_name_with_schema: "public.film"
         transformations:
           - columns: [ "film_id" ]
             params:
