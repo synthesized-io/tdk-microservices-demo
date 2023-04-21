@@ -11,6 +11,7 @@ transformation_configs:
       - table_name_with_schema: "public.flyway_schema_history"
         mode: "KEEP"
     safety_mode: "RELAXED"
+    cycle_resolution_strategy: "DELETE_NOT_REQUIRED"
 
   films:
     default_config:
@@ -24,6 +25,7 @@ transformation_configs:
       - table_name_with_schema: "public.flyway_schema_history"
         mode: "KEEP"
     safety_mode: "RELAXED"
+    cycle_resolution_strategy: "DELETE_NOT_REQUIRED"
 
 data_source_mapping:
   payments:
