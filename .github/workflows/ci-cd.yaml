@@ -3,7 +3,10 @@ name: CI/CD
 on:
   push:
     branches:
-      - tdk
+      - 'master'
+  pull_request:
+    branches:
+      - '*'
 
 env:
   AWS_REGION: eu-west-2
@@ -74,7 +77,7 @@ jobs:
             --create-namespace \
             --install
 
-          job_name=synthesized-tdk-cron-${{ env.SHORT_SHA }}
+          job_name=synthesized-tdk-cron-${{ env.SHORT_SHA }}-${{ github.run_attempt }}
           kubectl create job --from=cronjob/synthesized-tdk-cron $job_name -n synthesized-tdk
           
           # Wait for the image to be pulled
