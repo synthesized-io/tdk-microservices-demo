@@ -7,10 +7,21 @@ transformation_configs:
         transformations:
           - columns: [ "film_id" ]
             params:
-              type: "unique_hashing"
+              type: "passthrough"
+      - table_name_with_schema: "public.flyway_schema_history"
+        mode: "KEEP"
+
   films:
     default_config:
       mode: "MASKING"
+    tables:
+      - table_name_with_schema: "public.films"
+        transformations:
+          - columns: [ "film_id" ]
+            params:
+              type: "passthrough"
+      - table_name_with_schema: "public.flyway_schema_history"
+        mode: "KEEP"
 
 data_source_mapping:
   payments:
