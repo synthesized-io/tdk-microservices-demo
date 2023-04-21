@@ -21,9 +21,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
       - name: Set environment variables
         run: |
           echo "SHORT_SHA=$(echo ${GITHUB_SHA::8})" >> $GITHUB_ENV
@@ -43,14 +40,14 @@ jobs:
       - name: Films Dump Backup
         uses: tj-actions/pg-dump@v2.3
         with:
-          database_url: ${{ secrets.STAGING_FILMS_DB_URL }}
+          database_url: ${{ env.STAGING_FILMS_DB_URL }}
           path: backups/films/backup-${{ env.SHORT_SHA }}.sql
           options: "-n public"
 
       - name: Payments Dump Backup
         uses: tj-actions/pg-dump@v2.3
         with:
-          database_url: ${{ secrets.STAGING_PAYMENTS_DB_URL }}
+          database_url: ${{ env.STAGING_PAYMENTS_DB_URL }}
           path: backups/payments/backup-${{ env.SHORT_SHA }}.sql
           options: "-n public"
 
@@ -91,27 +88,27 @@ jobs:
       - name: Delete and recreate schema of Films DB
         if: ${{ failure() }}
         run: |
-          psql -d ${{ secrets.STAGING_FILMS_DB_URL }} -c "DROP SCHEMA IF EXISTS public CASCADE;"
-          psql -d ${{ secrets.STAGING_FILMS_DB_URL }} -c "CREATE SCHEMA IF NOT EXISTS public;"
+          psql -d ${{ env.STAGING_FILMS_DB_URL }} -c "DROP SCHEMA IF EXISTS public CASCADE;"
+          psql -d ${{ env.STAGING_FILMS_DB_URL }} -c "CREATE SCHEMA IF NOT EXISTS public;"
 
       - name: Films Dump Restore
         if: ${{ failure() }}
         uses: tj-actions/pg-restore@v4.5
         with:
-          database_url: ${{ secrets.STAGING_FILMS_DB_URL }}
+          database_url: ${{ env.STAGING_FILMS_DB_URL }}
           backup_file: backups/films/backup-${{ env.SHORT_SHA }}.sql
 
       - name: Delete and recreate schema of Payments DB
         if: ${{ failure() }}
         run: |
-          psql -d ${{ secrets.STAGING_PAYMENTS_DB_URL }} -c "DROP SCHEMA IF EXISTS public CASCADE;"
-          psql -d ${{ secrets.STAGING_PAYMENTS_DB_URL }} -c "CREATE SCHEMA IF NOT EXISTS public;"
+          psql -d ${{ env.STAGING_PAYMENTS_DB_URL }} -c "DROP SCHEMA IF EXISTS public CASCADE;"
+          psql -d ${{ env.STAGING_PAYMENTS_DB_URL }} -c "CREATE SCHEMA IF NOT EXISTS public;"
 
       - name: Payments Dump Restore
         if: ${{ failure() }}
         uses: tj-actions/pg-restore@v4.5
         with:
-          database_url: ${{ secrets.STAGING_PAYMENTS_DB_URL }}
+          database_url: ${{ env.STAGING_PAYMENTS_DB_URL }}
           backup_file: backups/payments/backup-${{ env.SHORT_SHA }}.sql
 
   build-and-deploy-staging:
