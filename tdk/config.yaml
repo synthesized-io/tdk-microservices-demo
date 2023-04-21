@@ -10,6 +10,7 @@ transformation_configs:
               type: "passthrough"
       - table_name_with_schema: "public.flyway_schema_history"
         mode: "KEEP"
+    safety_mode: "RELAXED"
 
   films:
     default_config:
@@ -22,6 +23,7 @@ transformation_configs:
               type: "passthrough"
       - table_name_with_schema: "public.flyway_schema_history"
         mode: "KEEP"
+    safety_mode: "RELAXED"
 
 data_source_mapping:
   payments:
