@@ -13,7 +13,7 @@ env:
 
   TDK_HELM_REPOSITORY: ghcr.io/synthesized-io/synthesized-tdk
   TDK_HELM_VERSION: 0.1.4
-  TDK_CLI_VERSION: latest
+  TDK_CLI_VERSION: v1.25.0
 
 jobs:
   prepare-databases:
