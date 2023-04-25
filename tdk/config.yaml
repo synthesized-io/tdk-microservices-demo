@@ -1,0 +1,55 @@
+transformation_configs:
+  payments:
+    default_config:
+      mode: "MASKING"
+    tables:
+      - table_name_with_schema: "public.inventory"
+        # In this example we want keep `film_id` as is
+        transformations:
+          - columns: [ "film_id" ]
+            params:
+              type: "passthrough"
+      - table_name_with_schema: "public.flyway_schema_history"
+        mode: "KEEP"
+    safety_mode: "RELAXED"
+    cycle_resolution_strategy: "DELETE_NOT_REQUIRED"
+    schema_creation_mode: "DO_NOT_CREATE"
+    table_truncation_mode: "TRUNCATE"
+
+  films:
+    default_config:
+      mode: "MASKING"
+    tables:
+      - table_name_with_schema: "public.film"
+        transformations:
+          # In this example we want keep `film_id` as is
+          - columns: [ "film_id" ]
+            params:
+              type: "passthrough"
+          - columns: [ "rating" ]
+            # Custom types can be handled via mapping
+            mapping:
+              read: "?::text"
+              write: "?::mpaa_rating"
+            params:
+              type: "categorical_generator"
+              categories:
+                type: string
+                values: [ "G", "PG", "PG-13", "R", "NC-17" ]
+              probabilities: [ 0.5, 0.2, 0.1, 0.1, 0.1 ]
+      - table_name_with_schema: "public.flyway_schema_history"
+        mode: "KEEP"
+    safety_mode: "RELAXED"
+    cycle_resolution_strategy: "DELETE_NOT_REQUIRED"
+    schema_creation_mode: "DO_NOT_CREATE"
+    table_truncation_mode: "TRUNCATE"
+
+data_source_mapping:
+  payments:
+    source: "payments_prod"
+    targets:
+      - "payments_staging"
+  films:
+    source: "films_prod"
+    targets:
+      - "films_staging"

@@ -30,7 +30,7 @@ Parameters:
   DBAllocatedStorage:
     Description: The size of the database (Gb)
     Type: Number
-    Default: '5'
+    Default: '10'
   DBInstanceClass:
     Description: The database instance type
     Type: String
