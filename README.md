@@ -131,7 +131,8 @@ pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_paym
     * `arn:aws:iam::aws:policy/AmazonEKSClusterPolicy`
     * `arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy`
 2. Create access key for the created account
-3. Fill GitHub repository secrets `AWS_ACCESS_KEY_ID`, `AWS_ACCOUNT_ID`, `AWS_SECRET_ACCESS_KEY`.
+3. Fill GitHub repository secrets `AWS_ACCESS_KEY_ID`, `AWS_ACCOUNT_ID`, `AWS_SECRET_ACCESS_KEY`, `FILMS_PASSWORD`, `FILMS_USERNAME`, `PAYMENTS_PASSWORD`, `PAYMENTS_USERNAME`, `PROD_FILMS_DB_HOST`, `PROD_PAYMENTS_DB_HOST`, `STAGING_FILMS_DB_HOST`, `STAGING_PAYMENTS_DB_HOST`, `SYNTHESIZED_INVENTORY`, `SYNTHESIZED_KEY`
+
 4. Add access to CI user for both prod and staging environments
     * Edit the configmap `aws-auth`: 
       ```bash
@@ -173,3 +174,12 @@ pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_paym
               - system:masters
 
       ```
+
+
+## Synthesized TDK
+
+The synthesized TDK is used to mask data from production databases.
+
+In this demo, [TDK](https://docs.synthesized.io/tdk/latest/) is called in the CI/CD pipeline via [Helm Chart](https://github.com/synthesized-io/tdk/pkgs/container/synthesized-tdk). You can find the [multi-database configuration](https://docs.synthesized.io/tdk/latest/user_guide/tutorial/multi_database) in `./tdk/config.yaml`.
+
+The database credentials are configured using [inventory yaml](https://docs.synthesized.io/tdk/latest/user_guide/reference/inventory) stored in GitHub Actions Secrets.

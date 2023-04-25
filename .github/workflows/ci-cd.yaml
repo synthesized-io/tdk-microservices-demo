@@ -16,7 +16,7 @@ env:
 
   TDK_HELM_REPOSITORY: ghcr.io/synthesized-io/synthesized-tdk
   TDK_HELM_VERSION: 0.1.4
-  TDK_CLI_VERSION: v1.25.0
+  TDK_CLI_VERSION: v1.25.1
 
 jobs:
   prepare-databases:
@@ -89,26 +89,26 @@ jobs:
           if [ -z "$tdk_failed" ]; then 
               exit 1;
 
-      - name: Delete and recreate schema of Films DB
+      - name: Delete and recreate schema of Films DB if TDK failed
         if: ${{ failure() }}
         run: |
           psql -d ${{ env.STAGING_FILMS_DB_URL }} -c "DROP SCHEMA IF EXISTS public CASCADE;"
           psql -d ${{ env.STAGING_FILMS_DB_URL }} -c "CREATE SCHEMA IF NOT EXISTS public;"
 
-      - name: Films Dump Restore
+      - name: Films Dump Restore if TDK failed
         if: ${{ failure() }}
         uses: tj-actions/pg-restore@v4.5
         with:
           database_url: ${{ env.STAGING_FILMS_DB_URL }}
           backup_file: backups/films/backup-${{ env.SHORT_SHA }}.sql
 
-      - name: Delete and recreate schema of Payments DB
+      - name: Delete and recreate schema of Payments DB if TDK failed
         if: ${{ failure() }}
         run: |
           psql -d ${{ env.STAGING_PAYMENTS_DB_URL }} -c "DROP SCHEMA IF EXISTS public CASCADE;"
           psql -d ${{ env.STAGING_PAYMENTS_DB_URL }} -c "CREATE SCHEMA IF NOT EXISTS public;"
 
-      - name: Payments Dump Restore
+      - name: Payments Dump Restore if TDK failed
         if: ${{ failure() }}
         uses: tj-actions/pg-restore@v4.5
         with:

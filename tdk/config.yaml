@@ -4,6 +4,7 @@ transformation_configs:
       mode: "MASKING"
     tables:
       - table_name_with_schema: "public.inventory"
+        # In this example we want keep `film_id` as is
         transformations:
           - columns: [ "film_id" ]
             params:
@@ -21,9 +22,21 @@ transformation_configs:
     tables:
       - table_name_with_schema: "public.film"
         transformations:
+          # In this example we want keep `film_id` as is
           - columns: [ "film_id" ]
             params:
               type: "passthrough"
+          - columns: [ "rating" ]
+            # Custom types can be handled via mapping
+            mapping:
+              read: "?::text"
+              write: "?::mpaa_rating"
+            params:
+              type: "categorical_generator"
+              categories:
+                type: string
+                values: [ "G", "PG", "PG-13", "R", "NC-17" ]
+              probabilities: [ 0.5, 0.2, 0.1, 0.1, 0.1 ]
       - table_name_with_schema: "public.flyway_schema_history"
         mode: "KEEP"
     safety_mode: "RELAXED"
