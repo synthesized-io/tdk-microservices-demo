@@ -33,6 +33,12 @@ transformation_configs:
               write: "?::mpaa_rating"
             params:
               type: "categorical_generator"
+          - columns: [ "fulltext" ]
+            mapping:
+              read: "?::text"
+              write: "?::tsvector"
+            params:
+              type: "format_preserving_hashing"
       - table_name_with_schema: "public.flyway_schema_history"
         mode: "KEEP"
     safety_mode: "RELAXED"
