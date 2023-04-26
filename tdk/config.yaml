@@ -38,7 +38,7 @@ transformation_configs:
               read: "?::text"
               write: "?::tsvector"
             params:
-              type: "format_preserving_hashing"
+              type: "passthrough"
       - table_name_with_schema: "public.flyway_schema_history"
         mode: "KEEP"
     safety_mode: "RELAXED"
