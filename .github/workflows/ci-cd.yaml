@@ -199,6 +199,9 @@ jobs:
       - name: Checkout LFS objects
         run: git lfs checkout
 
+      - name: Set short SHA
+        run: echo "SHORT_SHA=$(echo ${GITHUB_SHA::8})" >> $GITHUB_ENV
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
