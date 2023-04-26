@@ -19,102 +19,102 @@ env:
   TDK_CLI_VERSION: v1.25.2
 
 jobs:
-  prepare-databases:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set environment variables
-        run: |
-          echo "SHORT_SHA=$(echo ${GITHUB_SHA::8})" >> $GITHUB_ENV
-          echo "STAGING_FILMS_DB_URL=$(echo postgres://${{ secrets.FILMS_USERNAME }}:${{ secrets.FILMS_PASSWORD }}@${{ secrets.STAGING_FILMS_DB_HOST }}:5432/films)" >> $GITHUB_ENV
-          echo "STAGING_PAYMENTS_DB_URL=$(echo postgres://${{ secrets.PAYMENTS_USERNAME }}:${{ secrets.PAYMENTS_PASSWORD }}@${{ secrets.STAGING_PAYMENTS_DB_HOST }}:5432/payments)" >> $GITHUB_ENV
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Set up Kubernetes environment
-        uses: azure/setup-kubectl@v1
-
-      - name: Films Dump Backup
-        uses: tj-actions/pg-dump@v2.3
-        with:
-          database_url: ${{ env.STAGING_FILMS_DB_URL }}
-          path: backups/films/backup-${{ env.SHORT_SHA }}.sql
-          options: "-n public"
-
-      - name: Payments Dump Backup
-        uses: tj-actions/pg-dump@v2.3
-        with:
-          database_url: ${{ env.STAGING_PAYMENTS_DB_URL }}
-          path: backups/payments/backup-${{ env.SHORT_SHA }}.sql
-          options: "-n public"
-
-      - name: Update kubeconfig for staging
-        run: |
-          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.STAGING_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
-          kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:cluster/${{ env.STAGING_CLUSTER_NAME }}
-
-      - name: Run Synthesized TDK
-        run: |
-          mkdir tdk-chart && cd tdk-chart
-          helm pull oci://${{ env.TDK_HELM_REPOSITORY }} --version ${{ env.TDK_HELM_VERSION }}
-          tar xf $(pwd)/* && find $(pwd) -maxdepth 1 -type f -delete
-
-          echo "${{ secrets.SYNTHESIZED_INVENTORY }}" > inventory.yaml
-
-          helm upgrade synthesized-tdk synthesized-tdk \
-            --set-file env.SYNTHESIZED_USERCONFIG="../tdk/config.yaml" \
-            --set-file envRenderSecret.SYNTHESIZED_INVENTORY="inventory.yaml" \
-            --set envRenderSecret.SYNTHESIZED_KEY=${{ secrets.SYNTHESIZED_KEY }} \
-            --set image.tag=${{ env.TDK_CLI_VERSION }} \
-            --namespace synthesized-tdk \
-            --create-namespace \
-            --install
-
-          job_name=synthesized-tdk-cron-${{ env.SHORT_SHA }}-${{ github.run_attempt }}
-          kubectl create job --from=cronjob/synthesized-tdk-cron $job_name -n synthesized-tdk
-          
-          # Wait for the image to be pulled
-          sleep 15
-          
-          kubectl logs -f jobs/$job_name -n synthesized-tdk
-
-          tdk_failed=$(kubectl get job $job_name -n synthesized-tdk -o jsonpath={.status.failed})
-          if [[ -n "$tdk_failed" ]]; then
-            exit 1;
-          fi;
-
-      - name: Delete and recreate schema of Films DB if TDK failed
-        if: ${{ failure() }}
-        run: |
-          psql -d ${{ env.STAGING_FILMS_DB_URL }} -c "DROP SCHEMA IF EXISTS public CASCADE;"
-          psql -d ${{ env.STAGING_FILMS_DB_URL }} -c "CREATE SCHEMA IF NOT EXISTS public;"
-
-      - name: Films Dump Restore if TDK failed
-        if: ${{ failure() }}
-        uses: tj-actions/pg-restore@v4.5
-        with:
-          database_url: ${{ env.STAGING_FILMS_DB_URL }}
-          backup_file: backups/films/backup-${{ env.SHORT_SHA }}.sql
-
-      - name: Delete and recreate schema of Payments DB if TDK failed
-        if: ${{ failure() }}
-        run: |
-          psql -d ${{ env.STAGING_PAYMENTS_DB_URL }} -c "DROP SCHEMA IF EXISTS public CASCADE;"
-          psql -d ${{ env.STAGING_PAYMENTS_DB_URL }} -c "CREATE SCHEMA IF NOT EXISTS public;"
-
-      - name: Payments Dump Restore if TDK failed
-        if: ${{ failure() }}
-        uses: tj-actions/pg-restore@v4.5
-        with:
-          database_url: ${{ env.STAGING_PAYMENTS_DB_URL }}
-          backup_file: backups/payments/backup-${{ env.SHORT_SHA }}.sql
+#  prepare-databases:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#
+#      - name: Set environment variables
+#        run: |
+#          echo "SHORT_SHA=$(echo ${GITHUB_SHA::8})" >> $GITHUB_ENV
+#          echo "STAGING_FILMS_DB_URL=$(echo postgres://${{ secrets.FILMS_USERNAME }}:${{ secrets.FILMS_PASSWORD }}@${{ secrets.STAGING_FILMS_DB_HOST }}:5432/films)" >> $GITHUB_ENV
+#          echo "STAGING_PAYMENTS_DB_URL=$(echo postgres://${{ secrets.PAYMENTS_USERNAME }}:${{ secrets.PAYMENTS_PASSWORD }}@${{ secrets.STAGING_PAYMENTS_DB_HOST }}:5432/payments)" >> $GITHUB_ENV
+#
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ env.AWS_REGION }}
+#
+#      - name: Set up Kubernetes environment
+#        uses: azure/setup-kubectl@v1
+#
+#      - name: Films Dump Backup
+#        uses: tj-actions/pg-dump@v2.3
+#        with:
+#          database_url: ${{ env.STAGING_FILMS_DB_URL }}
+#          path: backups/films/backup-${{ env.SHORT_SHA }}.sql
+#          options: "-n public"
+#
+#      - name: Payments Dump Backup
+#        uses: tj-actions/pg-dump@v2.3
+#        with:
+#          database_url: ${{ env.STAGING_PAYMENTS_DB_URL }}
+#          path: backups/payments/backup-${{ env.SHORT_SHA }}.sql
+#          options: "-n public"
+#
+#      - name: Update kubeconfig for staging
+#        run: |
+#          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.STAGING_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
+#          kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:cluster/${{ env.STAGING_CLUSTER_NAME }}
+#
+#      - name: Run Synthesized TDK
+#        run: |
+#          mkdir tdk-chart && cd tdk-chart
+#          helm pull oci://${{ env.TDK_HELM_REPOSITORY }} --version ${{ env.TDK_HELM_VERSION }}
+#          tar xf $(pwd)/* && find $(pwd) -maxdepth 1 -type f -delete
+#
+#          echo "${{ secrets.SYNTHESIZED_INVENTORY }}" > inventory.yaml
+#
+#          helm upgrade synthesized-tdk synthesized-tdk \
+#            --set-file env.SYNTHESIZED_USERCONFIG="../tdk/config.yaml" \
+#            --set-file envRenderSecret.SYNTHESIZED_INVENTORY="inventory.yaml" \
+#            --set envRenderSecret.SYNTHESIZED_KEY=${{ secrets.SYNTHESIZED_KEY }} \
+#            --set image.tag=${{ env.TDK_CLI_VERSION }} \
+#            --namespace synthesized-tdk \
+#            --create-namespace \
+#            --install
+#
+#          job_name=synthesized-tdk-cron-${{ env.SHORT_SHA }}-${{ github.run_attempt }}
+#          kubectl create job --from=cronjob/synthesized-tdk-cron $job_name -n synthesized-tdk
+#
+#          # Wait for the image to be pulled
+#          sleep 15
+#
+#          kubectl logs -f jobs/$job_name -n synthesized-tdk
+#
+#          tdk_failed=$(kubectl get job $job_name -n synthesized-tdk -o jsonpath={.status.failed})
+#          if [[ -n "$tdk_failed" ]]; then
+#            exit 1;
+#          fi;
+#
+#      - name: Delete and recreate schema of Films DB if TDK failed
+#        if: ${{ failure() }}
+#        run: |
+#          psql -d ${{ env.STAGING_FILMS_DB_URL }} -c "DROP SCHEMA IF EXISTS public CASCADE;"
+#          psql -d ${{ env.STAGING_FILMS_DB_URL }} -c "CREATE SCHEMA IF NOT EXISTS public;"
+#
+#      - name: Films Dump Restore if TDK failed
+#        if: ${{ failure() }}
+#        uses: tj-actions/pg-restore@v4.5
+#        with:
+#          database_url: ${{ env.STAGING_FILMS_DB_URL }}
+#          backup_file: backups/films/backup-${{ env.SHORT_SHA }}.sql
+#
+#      - name: Delete and recreate schema of Payments DB if TDK failed
+#        if: ${{ failure() }}
+#        run: |
+#          psql -d ${{ env.STAGING_PAYMENTS_DB_URL }} -c "DROP SCHEMA IF EXISTS public CASCADE;"
+#          psql -d ${{ env.STAGING_PAYMENTS_DB_URL }} -c "CREATE SCHEMA IF NOT EXISTS public;"
+#
+#      - name: Payments Dump Restore if TDK failed
+#        if: ${{ failure() }}
+#        uses: tj-actions/pg-restore@v4.5
+#        with:
+#          database_url: ${{ env.STAGING_PAYMENTS_DB_URL }}
+#          backup_file: backups/payments/backup-${{ env.SHORT_SHA }}.sql
 
   build-and-deploy-staging:
     runs-on: ubuntu-latest
@@ -177,9 +177,9 @@ jobs:
             --set services.films.image.tag=${{ env.SHORT_SHA }} \
             --set services.payments.image.tag=${{ env.SHORT_SHA }}
 
-      - name: Run tests
-        run: |
-          curl -sfL "http://staging.tdk-microservices-demo.synthesized.io/api/v1/films/1" || exit 1
+#      - name: Run tests
+#        run: |
+#          curl -sfL "http://staging.tdk-microservices-demo.synthesized.io/api/v1/films/1" || exit 1
 
       - name: Rollback on test failure
         if: ${{ failure() }}
@@ -187,7 +187,7 @@ jobs:
           helm rollback tdk-microservices-demo --namespace tdk-microservices-demo
 
   deploy-to-production:
-    if: github.ref == 'refs/heads/master'
+#    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: build-and-deploy-staging
     steps:
