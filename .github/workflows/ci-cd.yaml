@@ -203,7 +203,6 @@ jobs:
           aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.PROD_CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG }}
 
       - name: Deploy to prod
-        if: github.event_name == 'workflow_dispatch'
         run: |
           kubectl config use-context arn:aws:eks:${{ env.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:cluster/${{ env.PROD_CLUSTER_NAME }}
           helm upgrade tdk-microservices-demo ./infrastructure/helm/charts/tdk-microservices-demo \
