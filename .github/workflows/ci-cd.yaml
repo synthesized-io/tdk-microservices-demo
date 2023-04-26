@@ -86,7 +86,7 @@ jobs:
           kubectl logs -f jobs/$job_name -n synthesized-tdk
 
           tdk_failed=$(kubectl get job $job_name -n synthesized-tdk -o jsonpath={.status.failed})
-          if [[ -n "$tdk_failed" ]]; then
+          if [[ "$tdk_failed" == "1" ]]; then
             exit 1;
           fi;
 
