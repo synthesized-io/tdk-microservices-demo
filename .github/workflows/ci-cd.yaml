@@ -39,7 +39,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Set up Kubernetes environment
-        uses: azure/setup-kubectl@v1
+        uses: azure/setup-kubectl@v3
 
       - name: Films Dump Backup
         uses: tj-actions/pg-dump@v2.3
@@ -162,7 +162,7 @@ jobs:
           file: Dockerfile.payments
 
       - name: Set up Kubernetes environment
-        uses: azure/setup-kubectl@v1
+        uses: azure/setup-kubectl@v3
 
       - name: Update kubeconfig for staging
         run: |
