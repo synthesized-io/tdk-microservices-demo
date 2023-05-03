@@ -109,18 +109,14 @@ tdk-microservices-demo.com -> <PROD NLB>
 
 ```bash
 docker run --name pagila-postgres -e POSTGRES_PASSWORD=123 -p 5432:5432 -d postgres
-docker exec -it pagila-postgres psql -U postgres -c "create role tdk_user login password 'tdk_user123';"
-docker exec -it pagila-postgres psql -U postgres -c "create role cloudsqladmin;"
 docker cp <pagila_dump> pagila-postgres:/tmp/pagila_dump.sql
 docker exec -it pagila-postgres psql -U postgres -f /tmp/pagila_dump.sql
-docker exec -it pagila-postgres psql -U postgres -c "ALTER SCHEMA public OWNER TO tdk_user;" tdk_sakila_input_1gb
-docker exec -it pagila-postgres psql -U postgres -c "drop role cloudsqladmin;" tdk_sakila_input_1gb
 
 python3 -m pip install psycopg2 
 python3 infrastructure/scripts/split.py
 
-pg_dump -h localhost -U tdk_user -f "pagila_films.sql" --no-owner pagila_films
-pg_dump -h localhost -U tdk_user -f "pagila_payments.sql" --no-owner pagila_payments
+pg_dump -h localhost -U postgres -f "pagila_films.sql" --no-owner pagila_films
+pg_dump -h localhost -U postgres -f "pagila_payments.sql" --no-owner pagila_payments
 ```
 
 

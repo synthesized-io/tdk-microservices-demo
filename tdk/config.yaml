@@ -33,10 +33,12 @@ transformation_configs:
               write: "?::mpaa_rating"
             params:
               type: "categorical_generator"
-              categories:
-                type: string
-                values: [ "G", "PG", "PG-13", "R", "NC-17" ]
-              probabilities: [ 0.5, 0.2, 0.1, 0.1, 0.1 ]
+          - columns: [ "fulltext" ]
+            mapping:
+              read: "?::text"
+              write: "?::tsvector"
+            params:
+              type: "passthrough"
       - table_name_with_schema: "public.flyway_schema_history"
         mode: "KEEP"
     safety_mode: "RELAXED"

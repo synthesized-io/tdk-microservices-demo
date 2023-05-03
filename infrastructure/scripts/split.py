@@ -2,9 +2,9 @@ import psycopg2
 
 # Update these values with your PostgreSQL connection details
 db_host = "localhost"
-db_name = "tdk_sakila_input_1gb"
+db_name = "postgres"
 db_user = "postgres"
-db_password = "<>>"
+db_password = "123"
 
 # Connect to the Pagila database
 conn = psycopg2.connect(host=db_host, dbname=db_name, user=db_user, password=db_password)
