@@ -5,17 +5,17 @@ populate databases for staging environment of a simple microservice application.
 
 ## Architecture
 
-![Architecture](./images/Microservices Demo.png)
-In this example project we use open-source Pagila database. This database is split so one databases store information about films and another about payments. For each database we have a corresponding service that exposes REST API to access data. This system is deployed into AWS EKS cluster into two environments: staging and production. Each environment has its own databases and services.
+![Architecture](./images/Microservices_Demo.png)
+In this example project, we use the open-source Pagila database. This database is split so that one database stores information about films and another about payments. For each database we have a corresponding service that exposes REST API to access data. This system is deployed into AWS EKS cluster into two environments: staging and production. Each environment has its own databases and services.
 
 ## Details
 
 - Prior to each staging deployment we refresh staging databases with the latest data from production.
-- When staging deployed finishes we run E2E test that demonstrates that services can talk to databases each other.
-- If this tests successful we promote the deployment to production.
-- If this tests fails we perform the rollback of the staging deployment.
+- When the staging deployment finishes, we run E2E test that demonstrates that services can communicate with each other and with databases.
+- If this test is successful, we promote the deployment to production.
+- If this test fails, we perform the rollback of the staging deployment.
 
-These set of steps gurantee that the deployment to staging is almost identical to the production one. For instance, if there are new database migration scripts, they would be tested on the latest replica of production database and the E2E tests would guarantee that the new version of the application can work with the new version of the database.
+These set of steps guarantee that the deployment to staging is almost identical to the production one. For instance, if there are new database migration scripts, they would be tested on the latest replica of the production database, and the E2E tests would ensure that the new version of the application can work with the new version of the database.
 
 ## Links
 - [TDK](https://docs.synthesized.io/tdk/latest/)
